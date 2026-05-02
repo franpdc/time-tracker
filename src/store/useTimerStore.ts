@@ -1,0 +1,170 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+export interface Folder {
+  id: string;
+  name: string;
+  isOpen: boolean;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  color: string;
+  folderId: string | null;
+}
+
+export interface TimeEntry {
+  id: string;
+  taskName: string;
+  projectId: string | null;
+  startedAt: number;
+  endedAt: number;
+  duration: number; // in seconds
+}
+
+export interface ActiveTimer {
+  id: string;
+  taskName: string;
+  projectId: string | null;
+  startedAt: number;
+  pausedAt?: number;
+}
+
+interface AppState {
+  // Folders & Projects
+  folders: Folder[];
+  projects: Project[];
+  addFolder: (name: string) => void;
+  deleteFolder: (id: string) => void;
+  addProject: (name: string, color: string, folderId: string | null) => void;
+  deleteProject: (id: string) => void;
+  toggleFolder: (id: string) => void;
+
+  // Timer
+  activeTimer: ActiveTimer | null;
+  startTimer: (taskName: string, projectId: string | null) => void;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
+  stopTimer: () => void;
+  updateTimer: (taskName: string, projectId: string | null) => void;
+
+  // History
+  entries: TimeEntry[];
+  addEntry: (entry: TimeEntry) => void;
+  deleteEntry: (id: string) => void;
+}
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      folders: [],
+      projects: [],
+      addFolder: (name) => {
+        set((state) => ({
+          folders: [...state.folders, { id: crypto.randomUUID(), name, isOpen: true }],
+        }));
+      },
+      deleteFolder: (id) => {
+        set((state) => ({
+          folders: state.folders.filter((f) => f.id !== id),
+          // Also set folderId to null for all projects in this folder
+          projects: state.projects.map((p) => (p.folderId === id ? { ...p, folderId: null } : p)),
+        }));
+      },
+      addProject: (name, color, folderId) => {
+        set((state) => ({
+          projects: [...state.projects, { id: crypto.randomUUID(), name, color, folderId }],
+        }));
+      },
+      deleteProject: (id) => {
+        set((state) => ({
+          projects: state.projects.filter((p) => p.id !== id),
+          entries: state.entries.map((e) => (e.projectId === id ? { ...e, projectId: null } : e)),
+        }));
+      },
+      toggleFolder: (id) => {
+        set((state) => ({
+          folders: state.folders.map((f) =>
+            f.id === id ? { ...f, isOpen: !f.isOpen } : f
+          ),
+        }));
+      },
+
+      activeTimer: null,
+      startTimer: (taskName, projectId) => {
+        set({
+          activeTimer: {
+            id: crypto.randomUUID(),
+            taskName,
+            projectId,
+            startedAt: Date.now(),
+          },
+        });
+      },
+      pauseTimer: () => {
+        const { activeTimer } = get();
+        if (activeTimer && !activeTimer.pausedAt) {
+          set({
+            activeTimer: { ...activeTimer, pausedAt: Date.now() },
+          });
+        }
+      },
+      resumeTimer: () => {
+        const { activeTimer } = get();
+        if (activeTimer && activeTimer.pausedAt) {
+          const pauseDuration = Date.now() - activeTimer.pausedAt;
+          set({
+            activeTimer: {
+              ...activeTimer,
+              startedAt: activeTimer.startedAt + pauseDuration,
+              pausedAt: undefined,
+            },
+          });
+        }
+      },
+      stopTimer: () => {
+        const { activeTimer, entries } = get();
+        if (activeTimer) {
+          const endedAt = activeTimer.pausedAt || Date.now();
+          const duration = Math.floor((endedAt - activeTimer.startedAt) / 1000);
+          
+          const newEntry: TimeEntry = {
+            id: crypto.randomUUID(),
+            taskName: activeTimer.taskName,
+            projectId: activeTimer.projectId,
+            startedAt: activeTimer.startedAt,
+            endedAt,
+            duration,
+          };
+
+          set({
+            activeTimer: null,
+            entries: [...entries, newEntry],
+          });
+        }
+      },
+      updateTimer: (taskName, projectId) => {
+        set((state) => ({
+          activeTimer: state.activeTimer
+            ? { ...state.activeTimer, taskName, projectId }
+            : null,
+        }));
+      },
+
+      entries: [],
+      addEntry: (entry) => {
+        set((state) => ({ entries: [...state.entries, entry] }));
+      },
+      deleteEntry: (id) => {
+        set((state) => ({
+          entries: state.entries.filter((e) => e.id !== id),
+        }));
+      },
+    }),
+    {
+      name: "time-tracker-storage",
+      version: 1, // bump version to clear initial mock data
+    }
+  )
+);
