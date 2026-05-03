@@ -145,17 +145,40 @@ interface BreakdownItem {
 
 
 export default function OverviewPage() {
-  const { entries, projects, deleteEntry, startTimer } = useAppStore();
+  const { entries, projects, deleteEntry, startTimer, activeTimer } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("hoje");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<typeof entries[0] | null>(null);
   const [mounted, setMounted] = React.useState(false);
+  const [activeElapsed, setActiveElapsed] = useState(0);
 
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
+
+  // Live timer for active session
+  React.useEffect(() => {
+    if (activeTimer) {
+      const update = () => {
+        const endedAt = activeTimer.pausedAt || Date.now();
+        setActiveElapsed(Math.max(0, Math.floor((endedAt - activeTimer.startedAt) / 1000)));
+      };
+      update();
+      let interval: NodeJS.Timeout | undefined;
+      if (!activeTimer.pausedAt) {
+        interval = setInterval(update, 1000);
+      }
+      return () => { if (interval) clearInterval(interval); };
+    } else {
+      // Use setTimeout to avoid synchronous setState in effect warning if needed, 
+      // though here it's cleaner to just not call it if we don't need it.
+      // But we DO need to reset it when activeTimer becomes null.
+      const timeout = setTimeout(() => setActiveElapsed(0), 0);
+      return () => clearTimeout(timeout);
+    }
+  }, [activeTimer]);
 
   const getProjectColor = (id: string | null) => projects.find(p => p.id === id)?.color || "#555555";
   const getProjectName = (id: string | null) => projects.find(p => p.id === id)?.name || "Sem Projeto";
@@ -216,7 +239,14 @@ export default function OverviewPage() {
     .sort((a, b) => b.startedAt - a.startedAt);
 
   // Derived stats
-  const totalSeconds = filteredEntries.reduce((acc, curr) => acc + curr.duration, 0);
+  const totalSeconds = filteredEntries.reduce((acc, curr) => acc + curr.duration, 0) + 
+    (activeTimer && (
+      (viewMode === "hoje" && isSameDay(new Date(activeTimer.startedAt), currentDate)) ||
+      (viewMode === "esta-semana" && isWithinInterval(new Date(activeTimer.startedAt), { start: startOfWeek(currentDate, { weekStartsOn: 1 }), end: endOfWeek(currentDate, { weekStartsOn: 1 }) })) ||
+      (viewMode === "este-mes" && isWithinInterval(new Date(activeTimer.startedAt), { start: startOfMonth(currentDate), end: endOfMonth(currentDate) })) ||
+      (viewMode === "este-ano" && isWithinInterval(new Date(activeTimer.startedAt), { start: startOfYear(currentDate), end: endOfYear(currentDate) }))
+    ) ? activeElapsed : 0);
+
   const formatTotal = () => formatDuration(totalSeconds);
 
   const groupedEntries = Array.from(
@@ -248,6 +278,21 @@ export default function OverviewPage() {
     projectDurations[pid] = (projectDurations[pid] || 0) + e.duration;
   });
 
+  // Add active timer to project distribution if applicable
+  if (activeTimer) {
+    const timerDate = new Date(activeTimer.startedAt);
+    const isVisible = 
+      (viewMode === "hoje" && isSameDay(timerDate, currentDate)) ||
+      (viewMode === "esta-semana" && isWithinInterval(timerDate, { start: startOfWeek(currentDate, { weekStartsOn: 1 }), end: endOfWeek(currentDate, { weekStartsOn: 1 }) })) ||
+      (viewMode === "este-mes" && isWithinInterval(timerDate, { start: startOfMonth(currentDate), end: endOfMonth(currentDate) })) ||
+      (viewMode === "este-ano" && isWithinInterval(timerDate, { start: startOfYear(currentDate), end: endOfYear(currentDate) }));
+    
+    if (isVisible) {
+      const pid = activeTimer.projectId || "Sem Projeto";
+      projectDurations[pid] = (projectDurations[pid] || 0) + activeElapsed;
+    }
+  }
+
   const topProjectEntry = Object.entries(projectDurations).sort((a, b) => b[1] - a[1])[0];
   const topProjectName = topProjectEntry 
     ? (topProjectEntry[0] === "Sem Projeto" ? "Sem Projeto" : projects.find(p => p.id === topProjectEntry[0])?.name || "Desconhecido")
@@ -260,12 +305,18 @@ export default function OverviewPage() {
   })).sort((a, b) => b.duration - a.duration);
 
   // Dynamic Bar Chart Data based on viewMode
-  const getBreakdown = (dayEntries: typeof entries) => {
+  const getBreakdown = (dayEntries: typeof entries, activeDuration: number = 0) => {
     const breakdown: Record<string, number> = {};
     dayEntries.forEach(e => {
       const pid = e.projectId || "Sem Projeto";
       breakdown[pid] = (breakdown[pid] || 0) + e.duration;
     });
+    
+    if (activeDuration > 0 && activeTimer) {
+      const pid = activeTimer.projectId || "Sem Projeto";
+      breakdown[pid] = (breakdown[pid] || 0) + activeDuration;
+    }
+
     return Object.entries(breakdown).map(([id, val]) => ({
       name: getProjectName(id === "Sem Projeto" ? null : id),
       color: getProjectColor(id === "Sem Projeto" ? null : id),
@@ -275,7 +326,8 @@ export default function OverviewPage() {
 
   let chartData: { label: string; value: number; breakdown: BreakdownItem[] }[] = [];
   if (viewMode === "hoje") {
-    chartData = [{ label: "Hoje", value: totalSeconds, breakdown: getBreakdown(filteredEntries) }];
+    const activeForToday = (activeTimer && isSameDay(new Date(activeTimer.startedAt), currentDate)) ? activeElapsed : 0;
+    chartData = [{ label: "Hoje", value: totalSeconds, breakdown: getBreakdown(filteredEntries, activeForToday) }];
   } else if (viewMode === "esta-semana") {
     const days = eachDayOfInterval({
       start: startOfWeek(currentDate, { weekStartsOn: 1 }),
@@ -283,8 +335,9 @@ export default function OverviewPage() {
     });
     chartData = days.map(day => {
       const dayEntries = filteredEntries.filter(e => isSameDay(new Date(e.startedAt), day));
-      const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0);
-      return { label: format(day, "EEEE", { locale: ptBR }).slice(0, 3), value, breakdown: getBreakdown(dayEntries) };
+      const activeForDay = (activeTimer && isSameDay(new Date(activeTimer.startedAt), day)) ? activeElapsed : 0;
+      const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0) + activeForDay;
+      return { label: format(day, "EEEE", { locale: ptBR }).slice(0, 3), value, breakdown: getBreakdown(dayEntries, activeForDay) };
     });
   } else if (viewMode === "este-mes") {
     const days = eachDayOfInterval({
@@ -293,8 +346,9 @@ export default function OverviewPage() {
     });
     chartData = days.map(day => {
       const dayEntries = filteredEntries.filter(e => isSameDay(new Date(e.startedAt), day));
-      const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0);
-      return { label: format(day, "dd"), value, breakdown: getBreakdown(dayEntries) };
+      const activeForDay = (activeTimer && isSameDay(new Date(activeTimer.startedAt), day)) ? activeElapsed : 0;
+      const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0) + activeForDay;
+      return { label: format(day, "dd"), value, breakdown: getBreakdown(dayEntries, activeForDay) };
     });
   } else if (viewMode === "este-ano") {
     const months = eachMonthOfInterval({
@@ -306,8 +360,12 @@ export default function OverviewPage() {
           start: startOfMonth(month),
           end: endOfMonth(month)
         }));
-      const value = monthEntries.reduce((acc, curr) => acc + curr.duration, 0);
-      return { label: format(month, "MMM", { locale: ptBR }), value, breakdown: getBreakdown(monthEntries) };
+      const activeForMonth = (activeTimer && isWithinInterval(new Date(activeTimer.startedAt), {
+          start: startOfMonth(month),
+          end: endOfMonth(month)
+        })) ? activeElapsed : 0;
+      const value = monthEntries.reduce((acc, curr) => acc + curr.duration, 0) + activeForMonth;
+      return { label: format(month, "MMM", { locale: ptBR }), value, breakdown: getBreakdown(monthEntries, activeForMonth) };
     });
   }
 

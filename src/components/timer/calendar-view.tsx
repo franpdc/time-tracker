@@ -9,11 +9,32 @@ import { EditEntryModal } from "./edit-entry-modal";
 import { AddManualEntryModal } from "./add-manual-entry-modal";
 
 export function CalendarView() {
-  const { entries, projects } = useAppStore();
+  const { entries, projects, activeTimer } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+  const [isEditingActive, setIsEditingActive] = useState(false);
   const [addEntryData, setAddEntryData] = useState<{ date: string; startTime: string } | null>(null);
   const [viewMode, setViewMode] = useState<"daily" | "weekly">("weekly");
+  const [activeElapsed, setActiveElapsed] = useState(0);
+
+  // Live timer for active session
+  useEffect(() => {
+    if (activeTimer) {
+      const update = () => {
+        const endedAt = activeTimer.pausedAt || Date.now();
+        setActiveElapsed(Math.max(0, Math.floor((endedAt - activeTimer.startedAt) / 1000)));
+      };
+      update();
+      let interval: NodeJS.Timeout | undefined;
+      if (!activeTimer.pausedAt) {
+        interval = setInterval(update, 1000);
+      }
+      return () => { if (interval) clearInterval(interval); };
+    } else {
+      const timeout = setTimeout(() => setActiveElapsed(0), 0);
+      return () => clearTimeout(timeout);
+    }
+  }, [activeTimer]);
   
   // Zoom levels: pixels per minute
   // 1px/min = 60px/hour. 1.5px/min = 90px/hour. 2px/min = 120px/hour.
@@ -156,7 +177,8 @@ export function CalendarView() {
                 const isToday = isSameDay(day, now);
                 // Calculate day total
                 const dayEntries = entries.filter(e => isSameDay(new Date(e.startedAt), day));
-                const dayTotal = dayEntries.reduce((acc, curr) => acc + curr.duration, 0);
+                const activeForThisDay = (activeTimer && isSameDay(new Date(activeTimer.startedAt), day)) ? activeElapsed : 0;
+                const dayTotal = dayEntries.reduce((acc, curr) => acc + curr.duration, 0) + activeForThisDay;
 
                 return (
                   <div key={day.toISOString()} className="flex-1 h-12 border-r border-border/50 flex flex-col justify-center items-center px-2">
@@ -203,6 +225,7 @@ export function CalendarView() {
               {/* Day Columns */}
               {weekDays.map(day => {
                 const dayEntries = entries.filter(e => isSameDay(new Date(e.startedAt), day));
+                const isActiveDay = activeTimer && isSameDay(new Date(activeTimer.startedAt), day);
 
                 return (
                   <div 
@@ -232,6 +255,41 @@ export function CalendarView() {
                         <Plus className="w-5 h-5 text-cyan-glow" strokeWidth={1.5} />
                       </div>
                     </div>
+
+                    {/* Active Timer Block */}
+                    {isActiveDay && (
+                      <div
+                        onClick={() => setIsEditingActive(true)}
+                        className="absolute left-[2px] right-[2px] rounded-md border overflow-hidden z-10 transition-all duration-300 cursor-pointer hover:brightness-110 active:scale-[0.99]"
+                        style={{
+                          top: (getHours(new Date(activeTimer.startedAt)) * 60 + getMinutes(new Date(activeTimer.startedAt))) * pixelsPerMinute,
+                          height: Math.max((activeElapsed / 60) * pixelsPerMinute, 15),
+                          backgroundColor: `${getProjectColor(activeTimer.projectId)}25`,
+                          borderColor: `${getProjectColor(activeTimer.projectId)}50`,
+                          borderLeftWidth: '3px',
+                          borderLeftColor: getProjectColor(activeTimer.projectId),
+                        }}
+                      >
+                        <div className="px-1.5 py-1 flex flex-col h-full overflow-hidden relative">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="relative flex h-1.5 w-1.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                            </span>
+                            <span className="text-[10px] font-bold text-foreground truncate leading-tight">
+                              {activeTimer.taskName || "Foco atual"}
+                            </span>
+                          </div>
+                          {activeElapsed >= 120 && (
+                            <span className="text-[9px] text-foreground/70 font-medium tabular-nums">
+                              {formatDuration(activeElapsed)} • Ao vivo
+                            </span>
+                          )}
+                          {/* Animated background stripes for active state */}
+                          <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(45deg,rgba(255,255,255,0.1)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.1)_50%,rgba(255,255,255,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px] animate-[stripe_2s_linear_infinite]" />
+                        </div>
+                      </div>
+                    )}
 
                     {/* Blocks */}
                     {dayEntries.map(entry => {
@@ -276,6 +334,15 @@ export function CalendarView() {
           </div>
         </div>
       </div>
+
+      {isEditingActive && activeTimer && (
+        <EditEntryModal
+          activeTimer={activeTimer}
+          isLive={true}
+          open={isEditingActive}
+          onOpenChange={setIsEditingActive}
+        />
+      )}
 
       {editingEntry && (
         <EditEntryModal

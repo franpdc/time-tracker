@@ -127,7 +127,11 @@ export default function Home() {
   const todayEntries = entries
     .filter(e => isSameDay(new Date(e.startedAt), today))
     .sort((a, b) => b.startedAt - a.startedAt);
-  const todaySeconds = todayEntries.reduce((acc, e) => acc + e.duration, 0);
+  
+  // Include elapsed time from active timer if it's today
+  const activeTimerElapsed = (activeTimer && isSameDay(new Date(activeTimer.startedAt), today)) ? elapsed : 0;
+  const todaySeconds = todayEntries.reduce((acc, e) => acc + e.duration, 0) + activeTimerElapsed;
+  
   const goalSeconds = dailyGoalMinutes * 60;
   const goalProgress = goalSeconds > 0 ? Math.min((todaySeconds / goalSeconds) * 100, 100) : 0;
 

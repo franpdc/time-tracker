@@ -59,6 +59,7 @@ interface AppState {
   resumeTimer: () => void;
   stopTimer: () => TimeEntry | null;
   updateTimer: (taskName: string, projectId: string | null) => void;
+  updateActiveTimer: (updates: Partial<ActiveTimer>) => void;
 
   // History
   entries: TimeEntry[];
@@ -189,6 +190,13 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           activeTimer: state.activeTimer
             ? { ...state.activeTimer, taskName, projectId }
+            : null,
+        }));
+      },
+      updateActiveTimer: (updates) => {
+        set((state) => ({
+          activeTimer: state.activeTimer
+            ? { ...state.activeTimer, ...updates }
             : null,
         }));
       },

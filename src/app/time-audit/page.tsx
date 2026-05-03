@@ -15,7 +15,8 @@ export default function TimeAuditPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const timeout = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timeout);
   }, []);
 
   const totalUsed = useMemo(() => {

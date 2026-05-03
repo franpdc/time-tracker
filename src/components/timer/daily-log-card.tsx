@@ -3,16 +3,38 @@
 import { format, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
+import { useState, useEffect } from "react";
 
 export function DailyLogCard() {
-  const { entries, projects } = useAppStore();
+  const { entries, projects, activeTimer } = useAppStore();
   const currentDate = new Date(); // Or whatever the selected date is
+  const [activeElapsed, setActiveElapsed] = useState(0);
+
+  // Live timer for active session
+  useEffect(() => {
+    if (activeTimer) {
+      const update = () => {
+        const endedAt = activeTimer.pausedAt || Date.now();
+        setActiveElapsed(Math.max(0, Math.floor((endedAt - activeTimer.startedAt) / 1000)));
+      };
+      update();
+      let interval: NodeJS.Timeout | undefined;
+      if (!activeTimer.pausedAt) {
+        interval = setInterval(update, 1000);
+      }
+      return () => { if (interval) clearInterval(interval); };
+    } else {
+      const timeout = setTimeout(() => setActiveElapsed(0), 0);
+      return () => clearTimeout(timeout);
+    }
+  }, [activeTimer]);
 
   const todayEntries = entries.filter((e) =>
     isSameDay(new Date(e.startedAt), currentDate)
   );
 
-  const totalSeconds = todayEntries.reduce((acc, curr) => acc + curr.duration, 0);
+  const activeForToday = (activeTimer && isSameDay(new Date(activeTimer.startedAt), currentDate)) ? activeElapsed : 0;
+  const totalSeconds = todayEntries.reduce((acc, curr) => acc + curr.duration, 0) + activeForToday;
 
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -27,10 +49,28 @@ export function DailyLogCard() {
       const pid = e.projectId || "Sem Projeto";
       pd[pid] = (pd[pid] || 0) + e.duration;
     });
+
+    if (activeForToday > 0 && activeTimer) {
+      const pid = activeTimer.projectId || "Sem Projeto";
+      pd[pid] = (pd[pid] || 0) + activeElapsed;
+    }
+
     return Object.entries(pd)
       .map(([id, duration]) => {
         const project = projects.find((p) => p.id === id);
         const projectTasks = todayEntries.filter(e => (e.projectId || "Sem Projeto") === id);
+        
+        // Add active task to tooltips if it matches the project
+        if (activeForToday > 0 && activeTimer && (activeTimer.projectId || "Sem Projeto") === id) {
+          projectTasks.push({
+            id: 'active',
+            taskName: activeTimer.taskName || "Foco atual",
+            duration: activeElapsed,
+            projectId: activeTimer.projectId,
+            startedAt: activeTimer.startedAt,
+            endedAt: activeTimer.startedAt + (activeElapsed * 1000)
+          });
+        }
         
         return {
           id,

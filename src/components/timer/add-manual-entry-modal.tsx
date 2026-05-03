@@ -28,7 +28,7 @@ interface AddManualEntryModalProps {
   initialEndTime?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  trigger?: React.ReactNode;
+  trigger?: React.ReactElement;
 }
 
 export function AddManualEntryModal({
@@ -117,9 +117,7 @@ export function AddManualEntryModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger ? (
-        <DialogTrigger asChild>
-          {trigger}
-        </DialogTrigger>
+        <DialogTrigger render={trigger} />
       ) : !isControlled ? (
         <DialogTrigger render={
           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-surface-hover text-xs font-medium text-foreground transition-all duration-300 ease-out active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background">

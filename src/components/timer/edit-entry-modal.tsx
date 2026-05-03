@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { format, parse } from "date-fns";
-import { FolderOpen } from "lucide-react";
-import { useAppStore, TimeEntry } from "@/store/useTimerStore";
+import { FolderOpen, Play, Square, Pause, Trash2 } from "lucide-react";
+import { useAppStore, TimeEntry, ActiveTimer } from "@/store/useTimerStore";
 import { toast } from "sonner";
+import { formatDuration } from "@/lib/utils";
 
 import {
   Dialog,
@@ -22,35 +23,65 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface EditEntryModalProps {
-  entry: TimeEntry;
+  entry?: TimeEntry;
+  activeTimer?: ActiveTimer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isLive?: boolean;
 }
 
-export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProps) {
-  const { projects, updateEntry } = useAppStore();
+export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive }: EditEntryModalProps) {
+  const { 
+    projects, updateEntry, deleteEntry,
+    pauseTimer, resumeTimer, stopTimer, updateActiveTimer 
+  } = useAppStore();
   
-  const [taskName, setTaskName] = useState(entry.taskName);
-  const [projectId, setProjectId] = useState<string | null>(entry.projectId);
-  const [date, setDate] = useState(format(new Date(entry.startedAt), "yyyy-MM-dd"));
-  const [startTime, setStartTime] = useState(format(new Date(entry.startedAt), "HH:mm"));
-  const [endTime, setEndTime] = useState(format(new Date(entry.endedAt), "HH:mm"));
+  const [taskName, setTaskName] = useState("");
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [elapsed, setElapsed] = useState(0);
 
-  // Reset state when entry changes or modal opens
+  // Initial state and live elapsed logic
   useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTaskName(entry.taskName);
-       
-      setProjectId(entry.projectId);
-       
-      setDate(format(new Date(entry.startedAt), "yyyy-MM-dd"));
-       
-      setStartTime(format(new Date(entry.startedAt), "HH:mm"));
-       
-      setEndTime(format(new Date(entry.endedAt), "HH:mm"));
+    if (!open) return;
+
+    const syncState = () => {
+      if (isLive && activeTimer) {
+        setTaskName(activeTimer.taskName);
+        setProjectId(activeTimer.projectId);
+        setDate(format(new Date(activeTimer.startedAt), "yyyy-MM-dd"));
+        setStartTime(format(new Date(activeTimer.startedAt), "HH:mm"));
+      } else if (entry) {
+        setTaskName(entry.taskName);
+        setProjectId(entry.projectId);
+        setDate(format(new Date(entry.startedAt), "yyyy-MM-dd"));
+        setStartTime(format(new Date(entry.startedAt), "HH:mm"));
+        setEndTime(format(new Date(entry.endedAt), "HH:mm"));
+      }
+    };
+
+    const timeout = setTimeout(syncState, 0);
+
+    let interval: NodeJS.Timeout | undefined;
+    if (isLive && activeTimer) {
+      const updateElapsed = () => {
+        const endedAt = activeTimer.pausedAt || Date.now();
+        setElapsed(Math.max(0, Math.floor((endedAt - activeTimer.startedAt) / 1000)));
+      };
+      
+      updateElapsed();
+      if (!activeTimer.pausedAt) {
+        interval = setInterval(updateElapsed, 1000);
+      }
     }
-  }, [open, entry]);
+
+    return () => {
+      clearTimeout(timeout);
+      if (interval) clearInterval(interval);
+    };
+  }, [open, entry, activeTimer, isLive]);
 
   const selectedProject = projects.find((p) => p.id === projectId);
 
@@ -59,43 +90,122 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
 
     try {
       const startDateTime = parse(`${date} ${startTime}`, "yyyy-MM-dd HH:mm", new Date());
-      const endDateTime = parse(`${date} ${endTime}`, "yyyy-MM-dd HH:mm", new Date());
-
       const startedAt = startDateTime.getTime();
-      let endedAt = endDateTime.getTime();
 
-      // Handle cases where end time is the next day (e.g. 23:00 to 01:00)
-      if (endedAt < startedAt) {
-        endedAt += 24 * 60 * 60 * 1000;
+      if (isLive && activeTimer) {
+        // Save edits to active session
+        updateActiveTimer({
+          taskName: taskName.trim() || "Foco atual",
+          projectId,
+          startedAt,
+        });
+        toast.success("Sessão atualizada");
+        onOpenChange(false);
+      } else if (entry) {
+        // Save edits to past entry
+        const endDateTime = parse(`${date} ${endTime}`, "yyyy-MM-dd HH:mm", new Date());
+        let endedAt = endDateTime.getTime();
+
+        if (endedAt < startedAt) {
+          endedAt += 24 * 60 * 60 * 1000;
+        }
+
+        const duration = Math.floor((endedAt - startedAt) / 1000);
+
+        updateEntry(entry.id, {
+          taskName: taskName.trim() || "Foco manual",
+          projectId,
+          startedAt,
+          endedAt,
+          duration,
+        });
+
+        toast.success("Sessão atualizada");
+        onOpenChange(false);
       }
-
-      const duration = Math.floor((endedAt - startedAt) / 1000);
-
-      updateEntry(entry.id, {
-        taskName: taskName.trim() || "Foco manual",
-        projectId,
-        startedAt,
-        endedAt,
-        duration,
-      });
-
-      toast.success("Sessão atualizada", {
-        description: taskName.trim() || "Foco manual",
-      });
-      onOpenChange(false);
     } catch (err) {
       console.error("Invalid date or time", err);
+    }
+  };
+
+  const handleStop = () => {
+    const savedEntry = stopTimer();
+    if (savedEntry) {
+      toast.success(`Sessão de ${formatDuration(savedEntry.duration)} gravada`);
+    }
+    onOpenChange(false);
+  };
+
+  const handleDelete = () => {
+    if (entry && confirm("Excluir esta sessão de foco?")) {
+      deleteEntry(entry.id);
+      toast.success("Sessão excluída");
+      onOpenChange(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated">
-        <DialogHeader>
-          <DialogTitle>Editar Sessão de Foco</DialogTitle>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <DialogTitle className="text-lg">
+            {isLive ? "Sessão Ativa" : "Editar Sessão"}
+          </DialogTitle>
+          {!isLive && (
+            <button
+              onClick={handleDelete}
+              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              title="Excluir sessão"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        {isLive && activeTimer && (
+          <div className="flex flex-col items-center py-6 bg-surface-hover/30 rounded-2xl border border-border/50 mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-live/10 px-3 py-1 mb-4">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-live absolute inline-flex h-full w-full rounded-full bg-green-live opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-live" />
+              </span>
+              <span className="text-[10px] font-bold tracking-[0.14em] text-green-live uppercase">
+                {activeTimer.pausedAt ? "Pausado" : "Ao vivo"}
+              </span>
+            </div>
+            
+            <div className="text-4xl font-bold tabular-nums tracking-tight mb-6">
+              {formatDuration(elapsed)}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleStop}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-all active:scale-[0.94]"
+                title="Parar e gravar"
+              >
+                <Square className="h-4 w-4" fill="currentColor" strokeWidth={0} />
+              </button>
+              {activeTimer.pausedAt ? (
+                <button
+                  onClick={resumeTimer}
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-accent text-foreground hover:brightness-110 transition-all active:scale-[0.96] shadow-glow-orange"
+                >
+                  <Play className="h-5 w-5 ml-0.5" fill="currentColor" strokeWidth={0} />
+                </button>
+              ) : (
+                <button
+                  onClick={pauseTimer}
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-glow text-[#0D0D0D] hover:brightness-110 transition-all active:scale-[0.96] animate-breathe"
+                >
+                  <Pause className="h-5 w-5" fill="currentColor" strokeWidth={0} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-xs text-muted-foreground font-medium">O que você fez?</label>
             <div className="flex items-center gap-2">
@@ -173,16 +283,18 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
                 className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground font-medium">Hora de término</label>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
-              />
-            </div>
+            {!isLive && (
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground font-medium">Hora de término</label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                  className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
+                />
+              </div>
+            )}
           </div>
 
           <div className="pt-4 flex justify-end gap-2">
