@@ -4,13 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import { format, startOfWeek, addDays, isSameDay, getHours, getMinutes } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore, TimeEntry } from "@/store/useTimerStore";
-import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { EditEntryModal } from "./edit-entry-modal";
+import { AddManualEntryModal } from "./add-manual-entry-modal";
 
 export function CalendarView() {
   const { entries, projects } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+  const [addEntryData, setAddEntryData] = useState<{ date: string; startTime: string } | null>(null);
   const [viewMode, setViewMode] = useState<"daily" | "weekly">("weekly");
   
   // Zoom levels: pixels per minute
@@ -203,7 +205,34 @@ export function CalendarView() {
                 const dayEntries = entries.filter(e => isSameDay(new Date(e.startedAt), day));
 
                 return (
-                  <div key={day.toISOString()} className="flex-1 border-r border-border/50 relative">
+                  <div 
+                    key={day.toISOString()} 
+                    className="flex-1 border-r border-border/50 relative hover:bg-surface-hover/10 transition-colors group/col"
+                    onClick={(e) => {
+                      // Only trigger if clicking on the background, not on an existing entry
+                      if (e.target === e.currentTarget) {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const y = e.clientY - rect.top;
+                        const totalMinutes = y / pixelsPerMinute;
+                        const hours = Math.floor(totalMinutes / 60);
+                        // Round to nearest 15 minutes
+                        const minutes = Math.floor((totalMinutes % 60) / 15) * 15;
+                        const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                        
+                        setAddEntryData({
+                          date: format(day, "yyyy-MM-dd"),
+                          startTime: timeStr
+                        });
+                      }
+                    }}
+                  >
+                    {/* Visual hint for clicking to add */}
+                    <div className="absolute inset-0 opacity-0 group-hover/col:opacity-100 pointer-events-none transition-opacity flex items-center justify-center">
+                      <div className="bg-cyan-glow/10 border border-cyan-glow/20 rounded-full p-2">
+                        <Plus className="w-5 h-5 text-cyan-glow" strokeWidth={1.5} />
+                      </div>
+                    </div>
+
                     {/* Blocks */}
                     {dayEntries.map(entry => {
                       const startDate = new Date(entry.startedAt);
@@ -255,6 +284,18 @@ export function CalendarView() {
           onOpenChange={(open) => {
             if (!open) setEditingEntry(null);
           }}
+        />
+      )}
+
+      {addEntryData && (
+        <AddManualEntryModal
+          key={`${addEntryData.date}-${addEntryData.startTime}`}
+          open={!!addEntryData}
+          onOpenChange={(open) => {
+            if (!open) setAddEntryData(null);
+          }}
+          initialDate={addEntryData.date}
+          initialStartTime={addEntryData.startTime}
         />
       )}
     </div>

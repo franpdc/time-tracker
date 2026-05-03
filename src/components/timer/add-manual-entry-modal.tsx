@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format, parse } from "date-fns";
+import { format, parse, addHours } from "date-fns";
 import { FolderOpen, Plus, History } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
 import { toast } from "sonner";
@@ -22,15 +22,46 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-export function AddManualEntryModal() {
+interface AddManualEntryModalProps {
+  initialDate?: string;
+  initialStartTime?: string;
+  initialEndTime?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
+}
+
+export function AddManualEntryModal({
+  initialDate,
+  initialStartTime,
+  initialEndTime,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  trigger
+}: AddManualEntryModalProps) {
   const { projects, addEntry, entries } = useAppStore();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+  const setIsOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
   
   const [taskName, setTaskName] = useState("");
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("10:00");
+  const [date, setDate] = useState(initialDate || format(new Date(), "yyyy-MM-dd"));
+  const [startTime, setStartTime] = useState(initialStartTime || "09:00");
+  const [endTime, setEndTime] = useState(initialEndTime || (() => {
+    if (initialStartTime) {
+      try {
+        const start = parse(initialStartTime, "HH:mm", new Date());
+        const end = addHours(start, 1);
+        return format(end, "HH:mm");
+      } catch {
+        return "10:00";
+      }
+    }
+    return "10:00";
+  }));
 
   const selectedProject = projects.find((p) => p.id === projectId);
 
@@ -44,10 +75,10 @@ export function AddManualEntryModal() {
   const suggestions = Array.from(recentTasksMap.entries())
     .filter(([name]) => name.toLowerCase().includes(taskName.toLowerCase()))
     .slice(0, 5);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Parse the date and times
     try {
       const startDateTime = parse(`${date} ${startTime}`, "yyyy-MM-dd HH:mm", new Date());
       const endDateTime = parse(`${date} ${endTime}`, "yyyy-MM-dd HH:mm", new Date());
@@ -55,7 +86,6 @@ export function AddManualEntryModal() {
       const startedAt = startDateTime.getTime();
       let endedAt = endDateTime.getTime();
 
-      // Handle cases where end time is the next day (e.g. 23:00 to 01:00)
       if (endedAt < startedAt) {
         endedAt += 24 * 60 * 60 * 1000;
       }
@@ -69,28 +99,35 @@ export function AddManualEntryModal() {
         startedAt,
         endedAt,
         duration,
+        source: "manual",
       });
 
-      // Reset and close
       toast.success(`Sessão de ${formatDuration(duration)} adicionada`, {
         description: taskName.trim() || "Foco manual",
       });
+      
       setTaskName("");
       setProjectId(null);
-      setOpen(false);
+      setIsOpen(false);
     } catch (err) {
       console.error("Invalid date or time", err);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={
-        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-surface-hover text-xs font-medium text-foreground transition-all duration-300 ease-out active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-          <Plus className="h-3.5 w-3.5" strokeWidth={1.5} />
-          Adicionar tempo
-        </button>
-      } />
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      {trigger ? (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      ) : !isControlled ? (
+        <DialogTrigger render={
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-surface-hover text-xs font-medium text-foreground transition-all duration-300 ease-out active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+            <Plus className="h-3.5 w-3.5" strokeWidth={1.5} />
+            Adicionar tempo
+          </button>
+        } />
+      ) : null}
       <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated">
         <DialogHeader>
           <DialogTitle>Adicionar Foco Manual</DialogTitle>
@@ -112,7 +149,6 @@ export function AddManualEntryModal() {
                   className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200"
                 />
                 
-                {/* Suggestions Dropdown */}
                 {showSuggestions && suggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl overflow-hidden z-50 shadow-elevated">
                     <div className="px-3 py-2 border-b border-border flex items-center gap-2 bg-surface-hover">

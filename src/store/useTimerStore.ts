@@ -22,6 +22,7 @@ export interface TimeEntry {
   startedAt: number;
   endedAt: number;
   duration: number; // in seconds
+  source?: "timer" | "manual";
 }
 
 export interface ActiveTimer {
@@ -172,6 +173,7 @@ export const useAppStore = create<AppState>()(
             startedAt: activeTimer.startedAt,
             endedAt,
             duration,
+            source: "timer",
           };
 
           set({
