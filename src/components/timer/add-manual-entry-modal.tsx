@@ -77,13 +77,13 @@ export function AddManualEntryModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2A2A2A] hover:bg-[#333333] text-xs font-medium text-white transition-colors cursor-pointer" />
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-[#333333] text-xs font-medium text-foreground transition-colors cursor-pointer" />
         }
       >
         <Plus className="h-3.5 w-3.5" />
         Adicionar tempo
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-[#1A1A1A] border-[#2A2A2A] text-white">
+      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
         <DialogHeader>
           <DialogTitle>Adicionar Foco Manual</DialogTitle>
         </DialogHeader>
@@ -98,12 +98,12 @@ export function AddManualEntryModal() {
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
                 required
-                className="flex-1 h-10 rounded-xl bg-transparent border border-[#2A2A2A] px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors"
+                className="flex-1 h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div
-                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#242424] transition-colors cursor-pointer px-3 gap-2"
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-accent transition-colors cursor-pointer px-3 gap-2"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
@@ -121,16 +121,16 @@ export function AddManualEntryModal() {
                     )}
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-[#1A1A1A] border-[#2A2A2A] z-[60]">
-                  <DropdownMenuItem onClick={() => setProjectId(null)} className="focus:bg-[#242424] cursor-pointer text-white">
+                <DropdownMenuContent align="end" className="w-48 bg-card border-border z-[60]">
+                  <DropdownMenuItem onClick={() => setProjectId(null)} className="focus:bg-accent cursor-pointer text-foreground">
                     Nenhum projeto
                   </DropdownMenuItem>
-                  {projects.length > 0 && <DropdownMenuSeparator className="bg-[#2A2A2A]" />}
+                  {projects.length > 0 && <DropdownMenuSeparator className="bg-accent" />}
                   {projects.map((p) => (
                     <DropdownMenuItem
                       key={p.id}
                       onClick={() => setProjectId(p.id)}
-                      className="flex items-center gap-2 focus:bg-[#242424] cursor-pointer text-white"
+                      className="flex items-center gap-2 focus:bg-accent cursor-pointer text-foreground"
                     >
                       <span
                         className="w-2.5 h-2.5 rounded-full"
@@ -151,7 +151,7 @@ export function AddManualEntryModal() {
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full h-10 rounded-xl bg-transparent border border-[#2A2A2A] px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-white [color-scheme:dark]"
+              className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
             />
           </div>
 
@@ -163,7 +163,7 @@ export function AddManualEntryModal() {
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="w-full h-10 rounded-xl bg-transparent border border-[#2A2A2A] px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-white [color-scheme:dark]"
+                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
               />
             </div>
             <div className="space-y-2">
@@ -173,7 +173,7 @@ export function AddManualEntryModal() {
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="w-full h-10 rounded-xl bg-transparent border border-[#2A2A2A] px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-white [color-scheme:dark]"
+                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
               />
             </div>
           </div>
@@ -183,7 +183,7 @@ export function AddManualEntryModal() {
               render={
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 />
               }
             >

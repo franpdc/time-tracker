@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Toaster } from "sonner";
+import { AppToaster } from "@/components/layout/app-toaster";
+import { TitleManager } from "@/components/layout/title-manager";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -25,14 +26,14 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} h-full antialiased dark`}
+      className={`${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col overflow-hidden bg-[#0D0D0D]">
+      <body className="min-h-full flex flex-col overflow-hidden bg-background">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          forcedTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <TooltipProvider>
@@ -40,21 +41,12 @@ export default function RootLayout({
               <div className="relative h-full z-20">
                 <Sidebar />
               </div>
-              <main className="flex-1 overflow-y-auto bg-[#0D0D0D]">
+              <main className="flex-1 overflow-y-auto bg-background">
                 {children}
               </main>
             </div>
-            <Toaster
-              theme="dark"
-              position="bottom-right"
-              toastOptions={{
-                style: {
-                  background: '#1A1A1A',
-                  border: '1px solid #2A2A2A',
-                  color: '#fff',
-                },
-              }}
-            />
+            <AppToaster />
+            <TitleManager />
           </TooltipProvider>
         </ThemeProvider>
       </body>

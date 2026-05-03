@@ -134,12 +134,12 @@ export function ActiveTimer() {
                 placeholder="Nome da tarefa..."
                 value={taskName}
                 onChange={(e) => handleTaskNameChange(e.target.value)}
-                className="flex-1 bg-transparent text-center text-3xl font-bold text-white placeholder:text-[#333333] border-none focus:outline-none focus:ring-0 ml-12"
+                className="flex-1 bg-transparent text-center text-3xl font-bold text-foreground placeholder:text-muted-foreground/30 border-none focus:outline-none focus:ring-0 ml-12"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div 
-                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#242424] transition-colors ml-2 cursor-pointer px-3 gap-2"
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-accent transition-colors ml-2 cursor-pointer px-3 gap-2"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
@@ -148,7 +148,7 @@ export function ActiveTimer() {
                           className="w-3.5 h-3.5 rounded-full"
                           style={{ backgroundColor: selectedProject.color }}
                         />
-                        <span className="text-xs font-medium text-white max-w-[100px] truncate">
+                        <span className="text-xs font-medium text-foreground max-w-[100px] truncate">
                           {selectedProject.name}
                         </span>
                       </>
@@ -157,16 +157,16 @@ export function ActiveTimer() {
                     )}
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-[#1A1A1A] border-[#2A2A2A]">
-                  <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-[#242424] cursor-pointer">
+                <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                  <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-accent cursor-pointer">
                     Nenhum projeto
                   </DropdownMenuItem>
-                  {projects.length > 0 && <DropdownMenuSeparator className="bg-[#2A2A2A]" />}
+                  {projects.length > 0 && <DropdownMenuSeparator className="bg-accent" />}
                   {projects.map((p) => (
                     <DropdownMenuItem
                       key={p.id}
                       onClick={() => handleProjectSelect(p.id)}
-                      className="flex items-center gap-2 focus:bg-[#242424] cursor-pointer"
+                      className="flex items-center gap-2 focus:bg-accent cursor-pointer"
                     >
                       <span
                         className="w-2.5 h-2.5 rounded-full"
@@ -195,13 +195,13 @@ export function ActiveTimer() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleToggleTimer();
                 }}
-                className="flex-1 bg-transparent text-center text-2xl font-bold text-white placeholder:text-[#333333] border-none focus:outline-none transition-colors ml-12"
+                className="flex-1 bg-transparent text-center text-2xl font-bold text-foreground placeholder:text-muted-foreground/30 border-none focus:outline-none transition-colors ml-12"
               />
 
               {/* Suggestions dropdown */}
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-full max-w-md bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl overflow-hidden z-50 shadow-2xl">
-                  <div className="px-3 py-2 border-b border-[#2A2A2A] bg-[#242424]/50 flex items-center gap-2">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-full max-w-md bg-card border border-border rounded-xl overflow-hidden z-50 shadow-2xl">
+                  <div className="px-3 py-2 border-b border-border bg-accent/50 flex items-center gap-2">
                     <History className="w-3 h-3 text-muted-foreground" />
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sugestões anteriores</span>
                   </div>
@@ -213,11 +213,11 @@ export function ActiveTimer() {
                         setProjectId(pid);
                         setShowSuggestions(false);
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-[#242424] transition-colors flex items-center justify-between group"
+                      className="w-full px-4 py-3 text-left hover:bg-accent transition-colors flex items-center justify-between group"
                     >
-                      <span className="text-sm text-white group-hover:text-cyan-glow transition-colors">{name}</span>
+                      <span className="text-sm text-foreground group-hover:text-cyan-glow transition-colors">{name}</span>
                       {pid && (
-                        <div className="flex items-center gap-1.5 bg-[#2A2A2A] px-2 py-0.5 rounded-full">
+                        <div className="flex items-center gap-1.5 bg-accent px-2 py-0.5 rounded-full">
                           <span 
                             className="w-2 h-2 rounded-full" 
                             style={{ backgroundColor: projects.find(p => p.id === pid)?.color }} 
@@ -233,7 +233,7 @@ export function ActiveTimer() {
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div 
-                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#242424] transition-colors ml-2 cursor-pointer px-3 gap-2"
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-accent transition-colors ml-2 cursor-pointer px-3 gap-2"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
@@ -242,7 +242,7 @@ export function ActiveTimer() {
                           className="w-3.5 h-3.5 rounded-full"
                           style={{ backgroundColor: selectedProject.color }}
                         />
-                        <span className="text-xs font-medium text-white max-w-[100px] truncate">
+                        <span className="text-xs font-medium text-foreground max-w-[100px] truncate">
                           {selectedProject.name}
                         </span>
                       </>
@@ -251,16 +251,16 @@ export function ActiveTimer() {
                     )}
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-[#1A1A1A] border-[#2A2A2A]">
-                  <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-[#242424] cursor-pointer">
+                <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                  <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-accent cursor-pointer">
                     Nenhum projeto
                   </DropdownMenuItem>
-                  {projects.length > 0 && <DropdownMenuSeparator className="bg-[#2A2A2A]" />}
+                  {projects.length > 0 && <DropdownMenuSeparator className="bg-accent" />}
                   {projects.map((p) => (
                     <DropdownMenuItem
                       key={p.id}
                       onClick={() => handleProjectSelect(p.id)}
-                      className="flex items-center gap-2 focus:bg-[#242424] cursor-pointer"
+                      className="flex items-center gap-2 focus:bg-accent cursor-pointer"
                     >
                       <span
                         className="w-2.5 h-2.5 rounded-full"
@@ -312,12 +312,12 @@ export function ActiveTimer() {
         <div className="flex flex-col items-center z-10">
           <div className="flex items-baseline gap-2">
             <div className="flex items-baseline">
-              <span className={`text-7xl font-bold tabular-nums tracking-tight ${activeTimer ? "text-white" : "text-[#555555]"}`}>
+              <span className={`text-7xl font-bold tabular-nums tracking-tight ${activeTimer ? "text-foreground" : "text-muted-foreground/50"}`}>
                 {time.display}
               </span>
             </div>
             {!time.isHour && (
-              <span className={`text-2xl font-bold ${activeTimer ? "text-cyan-glow" : "text-[#333333]"} self-end mb-2`}>
+              <span className={`text-2xl font-bold ${activeTimer ? "text-cyan-glow" : "text-muted-foreground/30"} self-end mb-2`}>
                 min
               </span>
             )}
@@ -334,14 +334,14 @@ export function ActiveTimer() {
           <>
             <button
               onClick={handleToggleTimer}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[#1A1A1A] border border-[#2A2A2A] text-white hover:bg-[#242424] transition-all duration-200 active:scale-95"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-card border border-border text-foreground hover:bg-accent transition-all duration-200 active:scale-95"
             >
               <Square className="h-6 w-6" fill="currentColor" />
             </button>
             {activeTimer.pausedAt ? (
               <button
                 onClick={resumeTimer}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-white hover:bg-orange-accent/90 transition-all duration-200 active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.3)]"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all duration-200 active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.3)]"
               >
                 <Play className="h-7 w-7 ml-1" fill="currentColor" />
               </button>
@@ -357,7 +357,7 @@ export function ActiveTimer() {
         ) : (
           <button
             onClick={handleToggleTimer}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-white hover:bg-orange-accent/90 transition-all duration-200 active:scale-95 shadow-[0_0_30px_rgba(255,107,0,0.3)]"
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all duration-200 active:scale-95 shadow-[0_0_30px_rgba(255,107,0,0.3)]"
           >
             <Play className="h-7 w-7 ml-1" fill="currentColor" />
           </button>

@@ -170,7 +170,7 @@ export default function Home() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-border">
         <div className="flex items-center gap-4">
           {mounted && (
             <p className="text-xs text-muted-foreground uppercase tracking-wide">
@@ -191,7 +191,7 @@ export default function Home() {
                     value={goalInput}
                     onChange={e => setGoalInput(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") handleGoalSave(); if (e.key === "Escape") setEditingGoal(false); }}
-                    className="w-12 h-7 rounded-md bg-[#1A1A1A] border border-[#2A2A2A] px-2 text-xs text-white focus:outline-none focus:border-cyan-glow text-center"
+                    className="w-12 h-7 rounded-md bg-card border border-border px-2 text-xs text-foreground focus:outline-none focus:border-cyan-glow text-center"
                   />
                   <span className="text-[10px] text-muted-foreground">h/dia</span>
                   <button onClick={handleGoalSave} className="text-[10px] text-cyan-glow hover:text-cyan-glow/80">OK</button>
@@ -199,11 +199,11 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => { setEditingGoal(true); setGoalInput(String(dailyGoalMinutes / 60)); }}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#333] transition-colors group"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border hover:border-border transition-colors group"
                   title="Editar meta diária"
                 >
                   <Target className="w-3 h-3 text-muted-foreground group-hover:text-cyan-glow transition-colors" />
-                  <span className="text-[10px] text-muted-foreground group-hover:text-white transition-colors">
+                  <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">
                     Meta: {dailyGoalMinutes / 60}h
                   </span>
                 </button>
@@ -226,11 +226,11 @@ export default function Home() {
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-muted-foreground">Progresso do dia</span>
-                  <span className="text-xs font-medium text-white tabular-nums">
+                  <span className="text-xs font-medium text-foreground tabular-nums">
                     {formatDuration(todaySeconds)} / {formatDuration(goalSeconds)}
                   </span>
                 </div>
-                <div className="h-2 bg-[#1A1A1A] rounded-full overflow-hidden">
+                <div className="h-2 bg-card rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700 ease-out"
                     style={{
@@ -251,7 +251,7 @@ export default function Home() {
             )}
 
             {/* Timer Area — Inline Compact */}
-            <div className="bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] p-5 mb-8">
+            <div className="bg-card rounded-2xl border border-border p-5 mb-8">
               {activeTimer ? (
                 /* Active Timer */
                 <div className="flex flex-col items-center gap-4">
@@ -271,26 +271,26 @@ export default function Home() {
                       value={taskName}
                       onChange={e => handleTaskNameChange(e.target.value)}
                       placeholder="Nome da tarefa..."
-                      className="flex-1 bg-transparent text-center text-xl font-bold text-white placeholder:text-[#333] border-none focus:outline-none"
+                      className="flex-1 bg-transparent text-center text-xl font-bold text-foreground placeholder:text-muted-foreground/30 border-none focus:outline-none"
                     />
                     <DropdownMenu>
                       <DropdownMenuTrigger>
-                        <div className="flex shrink-0 items-center justify-center h-9 rounded-xl bg-[#242424] border border-[#333] hover:bg-[#2A2A2A] transition-colors cursor-pointer px-2.5 gap-2">
+                        <div className="flex shrink-0 items-center justify-center h-9 rounded-xl bg-accent border border-border hover:bg-accent transition-colors cursor-pointer px-2.5 gap-2">
                           {selectedProject ? (
                             <>
                               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: selectedProject.color }} />
-                              <span className="text-xs font-medium text-white max-w-[80px] truncate">{selectedProject.name}</span>
+                              <span className="text-xs font-medium text-foreground max-w-[80px] truncate">{selectedProject.name}</span>
                             </>
                           ) : (
                             <FolderOpen className="w-4 h-4 text-muted-foreground" />
                           )}
                         </div>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 bg-[#1A1A1A] border-[#2A2A2A]">
-                        <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-[#242424] cursor-pointer">Nenhum projeto</DropdownMenuItem>
-                        {projects.length > 0 && <DropdownMenuSeparator className="bg-[#2A2A2A]" />}
+                      <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                        <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-accent cursor-pointer">Nenhum projeto</DropdownMenuItem>
+                        {projects.length > 0 && <DropdownMenuSeparator className="bg-accent" />}
                         {projects.map(p => (
-                          <DropdownMenuItem key={p.id} onClick={() => handleProjectSelect(p.id)} className="flex items-center gap-2 focus:bg-[#242424] cursor-pointer">
+                          <DropdownMenuItem key={p.id} onClick={() => handleProjectSelect(p.id)} className="flex items-center gap-2 focus:bg-accent cursor-pointer">
                             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
                             {p.name}
                           </DropdownMenuItem>
@@ -301,7 +301,7 @@ export default function Home() {
 
                   {/* Timer display */}
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-bold tabular-nums tracking-tight text-white">
+                    <span className="text-5xl font-bold tabular-nums tracking-tight text-foreground">
                       {formatElapsed(elapsed)}
                     </span>
                   </div>
@@ -310,14 +310,14 @@ export default function Home() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleStop}
-                      className="flex h-12 w-12 items-center justify-center rounded-full bg-[#242424] border border-[#333] text-white hover:bg-[#2A2A2A] transition-all active:scale-95"
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-accent border border-border text-foreground hover:bg-accent transition-all active:scale-95"
                     >
                       <Square className="h-5 w-5" fill="currentColor" />
                     </button>
                     {activeTimer.pausedAt ? (
                       <button
                         onClick={resumeTimer}
-                        className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-accent text-white hover:bg-orange-accent/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.3)]"
+                        className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.3)]"
                       >
                         <Play className="h-6 w-6 ml-0.5" fill="currentColor" />
                       </button>
@@ -343,20 +343,20 @@ export default function Home() {
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     onKeyDown={e => { if (e.key === "Enter") handleStart(); }}
                     placeholder="O que vamos focar agora?"
-                    className="flex-1 bg-transparent text-base font-medium text-white placeholder:text-[#444] border-none focus:outline-none"
+                    className="flex-1 bg-transparent text-base font-medium text-foreground placeholder:text-muted-foreground/40 border-none focus:outline-none"
                   />
 
                   {/* Suggestions */}
                   {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-16 mt-2 bg-[#242424] border border-[#333] rounded-xl overflow-hidden z-50 shadow-2xl">
-                      <div className="px-3 py-2 border-b border-[#333] flex items-center gap-2">
+                    <div className="absolute top-full left-0 right-16 mt-2 bg-accent border border-border rounded-xl overflow-hidden z-50 shadow-2xl">
+                      <div className="px-3 py-2 border-b border-border flex items-center gap-2">
                         <History className="w-3 h-3 text-muted-foreground" />
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Recentes</span>
                       </div>
                       {suggestions.map(([name, pid]) => (
                         <button key={name} onClick={() => { setTaskName(name); setProjectId(pid); setShowSuggestions(false); }}
-                          className="w-full px-3 py-2.5 text-left hover:bg-[#2A2A2A] transition-colors flex items-center justify-between">
-                          <span className="text-sm text-white">{name}</span>
+                          className="w-full px-3 py-2.5 text-left hover:bg-accent transition-colors flex items-center justify-between">
+                          <span className="text-sm text-foreground">{name}</span>
                           {pid && (
                             <div className="flex items-center gap-1.5">
                               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: projects.find(p => p.id === pid)?.color }} />
@@ -370,22 +370,22 @@ export default function Home() {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger>
-                      <div className="flex shrink-0 items-center justify-center h-9 rounded-xl bg-[#242424] border border-[#333] hover:bg-[#2A2A2A] transition-colors cursor-pointer px-2.5 gap-2">
+                      <div className="flex shrink-0 items-center justify-center h-9 rounded-xl bg-accent border border-border hover:bg-accent transition-colors cursor-pointer px-2.5 gap-2">
                         {selectedProject ? (
                           <>
                             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: selectedProject.color }} />
-                            <span className="text-xs font-medium text-white max-w-[80px] truncate">{selectedProject.name}</span>
+                            <span className="text-xs font-medium text-foreground max-w-[80px] truncate">{selectedProject.name}</span>
                           </>
                         ) : (
                           <FolderOpen className="w-4 h-4 text-muted-foreground" />
                         )}
                       </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-[#1A1A1A] border-[#2A2A2A]">
-                      <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-[#242424] cursor-pointer">Nenhum projeto</DropdownMenuItem>
-                      {projects.length > 0 && <DropdownMenuSeparator className="bg-[#2A2A2A]" />}
+                    <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                      <DropdownMenuItem onClick={() => handleProjectSelect(null)} className="focus:bg-accent cursor-pointer">Nenhum projeto</DropdownMenuItem>
+                      {projects.length > 0 && <DropdownMenuSeparator className="bg-accent" />}
                       {projects.map(p => (
-                        <DropdownMenuItem key={p.id} onClick={() => handleProjectSelect(p.id)} className="flex items-center gap-2 focus:bg-[#242424] cursor-pointer">
+                        <DropdownMenuItem key={p.id} onClick={() => handleProjectSelect(p.id)} className="flex items-center gap-2 focus:bg-accent cursor-pointer">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
                           {p.name}
                         </DropdownMenuItem>
@@ -395,7 +395,7 @@ export default function Home() {
 
                   <button
                     onClick={handleStart}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-accent text-white hover:bg-orange-accent/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.25)]"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.25)]"
                   >
                     <Play className="h-4.5 w-4.5 ml-0.5" fill="currentColor" />
                   </button>
@@ -405,40 +405,40 @@ export default function Home() {
 
             {/* Quick Stats Row */}
             <div className="grid grid-cols-3 gap-3 mb-8">
-              <div className="bg-[#1A1A1A] rounded-xl p-4 border border-[#2A2A2A]">
+              <div className="bg-card rounded-xl p-4 border border-border">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Hoje</p>
                 <p className="text-2xl font-bold text-cyan-glow tabular-nums">{formatDuration(todaySeconds)}</p>
               </div>
-              <div className="bg-[#1A1A1A] rounded-xl p-4 border border-[#2A2A2A]">
+              <div className="bg-card rounded-xl p-4 border border-border">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Sessões</p>
-                <p className="text-2xl font-bold text-white tabular-nums">{todayEntries.length}</p>
+                <p className="text-2xl font-bold text-foreground tabular-nums">{todayEntries.length}</p>
               </div>
-              <div className="bg-[#1A1A1A] rounded-xl p-4 border border-[#2A2A2A]">
+              <div className="bg-card rounded-xl p-4 border border-border">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Sequência</p>
-                <p className="text-2xl font-bold text-white tabular-nums">{streak} <span className="text-sm font-normal text-muted-foreground">dias</span></p>
+                <p className="text-2xl font-bold text-foreground tabular-nums">{streak} <span className="text-sm font-normal text-muted-foreground">dias</span></p>
               </div>
             </div>
 
             {/* Today's Entries */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-white">Hoje</h2>
+                <h2 className="text-sm font-semibold text-foreground">Hoje</h2>
                 <span className="text-xs text-muted-foreground tabular-nums">{formatDuration(todaySeconds)}</span>
               </div>
 
               {todayEntries.length === 0 ? (
-                <div className="bg-[#1A1A1A] rounded-xl border border-dashed border-[#2A2A2A] p-8 text-center">
-                  <p className="text-sm text-[#555]">Nenhuma sessão hoje ainda.</p>
-                  <p className="text-xs text-[#444] mt-1">Digite uma tarefa acima e clique ▶ para começar.</p>
+                <div className="bg-card rounded-xl border border-dashed border-border p-8 text-center">
+                  <p className="text-sm text-muted-foreground/50">Nenhuma sessão hoje ainda.</p>
+                  <p className="text-xs text-muted-foreground/40 mt-1">Digite uma tarefa acima e clique ▶ para começar.</p>
                 </div>
               ) : (
                 <div className="space-y-1">
                   {todayEntries.map(entry => (
-                    <div key={entry.id} className="flex items-center gap-3 px-4 py-3 bg-[#1A1A1A] rounded-xl border border-[#2A2A2A] hover:border-[#333] transition-colors group">
+                    <div key={entry.id} className="flex items-center gap-3 px-4 py-3 bg-card rounded-xl border border-border hover:border-border transition-colors group">
                       {/* Continue button */}
                       <button
                         onClick={() => handleContinue(entry)}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#242424] text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all opacity-0 group-hover:opacity-100"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all opacity-0 group-hover:opacity-100"
                         title="Continuar esta tarefa"
                       >
                         <Play className="h-3 w-3 ml-0.5" fill="currentColor" />
@@ -449,7 +449,7 @@ export default function Home() {
 
                       {/* Task info */}
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm text-white font-medium truncate block">{entry.taskName}</span>
+                        <span className="text-sm text-foreground font-medium truncate block">{entry.taskName}</span>
                       </div>
 
                       {/* Project name */}
@@ -463,7 +463,7 @@ export default function Home() {
                       </span>
 
                       {/* Duration */}
-                      <span className="text-sm font-medium text-white tabular-nums shrink-0 w-20 text-right">
+                      <span className="text-sm font-medium text-foreground tabular-nums shrink-0 w-20 text-right">
                         {formatDuration(entry.duration)}
                       </span>
                     </div>
@@ -476,27 +476,27 @@ export default function Home() {
             {yesterdayEntries.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-white">Ontem</h2>
+                  <h2 className="text-sm font-semibold text-foreground">Ontem</h2>
                   <span className="text-xs text-muted-foreground tabular-nums">
                     {formatDuration(yesterdayEntries.reduce((acc, e) => acc + e.duration, 0))}
                   </span>
                 </div>
                 <div className="space-y-1">
                   {yesterdayEntries.slice(0, 5).map(entry => (
-                    <div key={entry.id} className="flex items-center gap-3 px-4 py-3 bg-[#1A1A1A] rounded-xl border border-[#2A2A2A] hover:border-[#333] transition-colors group">
+                    <div key={entry.id} className="flex items-center gap-3 px-4 py-3 bg-card rounded-xl border border-border hover:border-border transition-colors group">
                       <button
                         onClick={() => handleContinue(entry)}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#242424] text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all opacity-0 group-hover:opacity-100"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all opacity-0 group-hover:opacity-100"
                         title="Continuar esta tarefa"
                       >
                         <Play className="h-3 w-3 ml-0.5" fill="currentColor" />
                       </button>
                       <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getProjectColor(entry.projectId) }} />
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm text-[#999] font-medium truncate block">{entry.taskName}</span>
+                        <span className="text-sm text-muted-foreground font-medium truncate block">{entry.taskName}</span>
                       </div>
                       <span className="text-[11px] text-muted-foreground truncate max-w-[100px] hidden sm:block">{getProjectName(entry.projectId)}</span>
-                      <span className="text-sm font-medium text-[#777] tabular-nums shrink-0 w-20 text-right">{formatDuration(entry.duration)}</span>
+                      <span className="text-sm font-medium text-muted-foreground/70 tabular-nums shrink-0 w-20 text-right">{formatDuration(entry.duration)}</span>
                     </div>
                   ))}
                   {yesterdayEntries.length > 5 && (
@@ -508,7 +508,7 @@ export default function Home() {
 
             {/* Keyboard shortcut hint */}
             <div className="mt-8 text-center">
-              <p className="text-[10px] text-[#333] uppercase tracking-wider">
+              <p className="text-[10px] text-muted-foreground/30 uppercase tracking-wider">
                 Espaço = Iniciar/Pausar • Enter = Iniciar
               </p>
             </div>

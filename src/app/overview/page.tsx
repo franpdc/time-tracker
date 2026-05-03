@@ -30,11 +30,11 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
     const years = Array.from({length: 21}, (_, i) => startYearNum + i);
     
     return (
-      <div className="w-[260px] p-2 text-white">
+      <div className="w-[260px] p-2 text-foreground">
         <div className="flex items-center justify-between mb-4 px-2 pt-2">
-          <button onClick={() => setCalDate(subYears(calDate, 20))} className="p-1 hover:bg-[#2A2A2A] rounded"><ChevronLeft className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(subYears(calDate, 20))} className="p-1 hover:bg-accent rounded"><ChevronLeft className="w-4 h-4"/></button>
           <span className="text-sm font-medium capitalize">{startYearNum} - {startYearNum + 20}</span>
-          <button onClick={() => setCalDate(addYears(calDate, 20))} className="p-1 hover:bg-[#2A2A2A] rounded"><ChevronRight className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(addYears(calDate, 20))} className="p-1 hover:bg-accent rounded"><ChevronRight className="w-4 h-4"/></button>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {years.map(y => {
@@ -45,7 +45,7 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
                   key={y}
                   onClick={() => { setCurrentDate(new Date(y, 0, 1)); setOpen(false); }}
                   className={`h-10 rounded-md flex flex-col items-center justify-center text-sm transition-colors
-                    ${isSelected ? "bg-cyan-glow text-black font-bold" : "hover:bg-[#2A2A2A]"}
+                    ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent"}
                   `}
                >
                  <span>{y}</span>
@@ -64,11 +64,11 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
     const realCurrentMonth = startOfMonth(new Date());
 
     return (
-      <div className="w-[260px] p-2 text-white">
+      <div className="w-[260px] p-2 text-foreground">
         <div className="flex items-center justify-between mb-4 px-2 pt-2">
-          <button onClick={() => setCalDate(subYears(calDate, 1))} className="p-1 hover:bg-[#2A2A2A] rounded"><ChevronLeft className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(subYears(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronLeft className="w-4 h-4"/></button>
           <span className="text-sm font-medium capitalize">{format(calDate, "yyyy")}</span>
-          <button onClick={() => setCalDate(addYears(calDate, 1))} className="p-1 hover:bg-[#2A2A2A] rounded"><ChevronRight className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(addYears(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronRight className="w-4 h-4"/></button>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {months.map(m => {
@@ -79,7 +79,7 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
                   key={m.toISOString()}
                   onClick={() => { setCurrentDate(m); setOpen(false); }}
                   className={`h-12 rounded-md flex flex-col items-center justify-center text-xs transition-colors capitalize
-                    ${isSelected ? "bg-cyan-glow text-black font-bold" : "hover:bg-[#2A2A2A]"}
+                    ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent"}
                   `}
                >
                  <span className="font-medium text-sm">{format(m, "MMM", { locale: ptBR })}</span>
@@ -103,11 +103,11 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
   const selectedWeekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
 
   return (
-    <div className="w-[260px] p-3 text-white">
+    <div className="w-[260px] p-3 text-foreground">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => setCalDate(subMonths(calDate, 1))} className="p-1 hover:bg-[#2A2A2A] rounded"><ChevronLeft className="w-4 h-4"/></button>
+        <button onClick={() => setCalDate(subMonths(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronLeft className="w-4 h-4"/></button>
         <span className="text-sm font-medium capitalize">{format(calDate, "MMMM yyyy", { locale: ptBR })}</span>
-        <button onClick={() => setCalDate(addMonths(calDate, 1))} className="p-1 hover:bg-[#2A2A2A] rounded"><ChevronRight className="w-4 h-4"/></button>
+        <button onClick={() => setCalDate(addMonths(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronRight className="w-4 h-4"/></button>
       </div>
       <div className="grid grid-cols-7 gap-1 mb-2">
         {['S','T','Q','Q','S','S','D'].map((d,i) => <div key={i} className="text-center text-[10px] text-muted-foreground">{d}</div>)}
@@ -123,7 +123,7 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
                 key={d.toISOString()}
                 onClick={() => { setCurrentDate(d); setOpen(false); }}
                 className={`h-8 rounded-md flex items-center justify-center text-xs transition-colors
-                  ${isSelected ? "bg-cyan-glow text-black font-bold" : "hover:bg-[#2A2A2A]"}
+                  ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent"}
                   ${!isCurrMonth && !isSelected ? "text-muted-foreground opacity-30" : ""}
                 `}
              >
@@ -320,9 +320,9 @@ export default function OverviewPage() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-[#1A1A1A]">
+      <header className="flex items-center justify-between px-8 py-5 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold text-white">Overview</h1>
+          <h1 className="text-xl font-bold text-foreground">Overview</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Acompanhe seu foco ao longo do tempo
           </p>
@@ -346,15 +346,15 @@ export default function OverviewPage() {
           <>
             {/* View mode tabs */}
         <div className="flex items-center gap-6 mb-6">
-          <div className="flex items-center gap-1 bg-[#1A1A1A] rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-card rounded-xl p-1">
             {views.map((v) => (
               <button
                 key={v.key}
                 onClick={() => setViewMode(v.key)}
                 className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
                   viewMode === v.key
-                    ? "bg-[#242424] text-white"
-                    : "text-[#666666] hover:text-[#999999]"
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground/60 hover:text-muted-foreground"
                 }`}
               >
                 {v.label}
@@ -366,24 +366,24 @@ export default function OverviewPage() {
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={goBack}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1A1A1A] text-muted-foreground hover:text-white transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
               <PopoverTrigger>
-                <div className="text-sm text-muted-foreground min-w-[150px] text-center font-medium capitalize flex items-center justify-center gap-2 hover:text-white transition-colors cursor-pointer">
+                <div className="text-sm text-muted-foreground min-w-[150px] text-center font-medium capitalize flex items-center justify-center gap-2 hover:text-foreground transition-colors cursor-pointer">
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {dateLabel}
                 </div>
               </PopoverTrigger>
-              <PopoverContent align="center" className="w-auto p-0 bg-[#1A1A1A] border-[#2A2A2A]">
+              <PopoverContent align="center" className="w-auto p-0 bg-card border-border">
                 <MiniCalendar currentDate={currentDate} setCurrentDate={setCurrentDate} setOpen={setIsCalendarOpen} viewMode={viewMode} />
               </PopoverContent>
             </Popover>
             <button
               onClick={goForward}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1A1A1A] text-muted-foreground hover:text-white transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -393,27 +393,27 @@ export default function OverviewPage() {
         {/* Stats and Log row */}
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 mb-8">
           {/* Stats cards grid — Total de foco is larger for visual hierarchy */}
-          <div className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-cyan-glow/10 to-transparent rounded-2xl p-5 border border-cyan-glow/20">
+          <div className="xl:col-span-3 grid grid-cols-2 gap-4">
+            <div className="bg-gradient-to-br from-cyan-glow/10 to-transparent rounded-2xl p-5 border border-cyan-glow/20 col-span-2 sm:col-span-1">
               <p className="text-xs text-cyan-glow/70 mb-1 font-medium">Total de foco</p>
-              <p className="text-4xl font-bold text-cyan-glow tracking-tight">
+              <p className="text-3xl font-bold text-cyan-glow tracking-tight">
                 {formatTotal()}
               </p>
               <p className="text-[11px] text-cyan-glow/50 mt-1">tempo {viewMode === "hoje" ? "hoje" : "no período"}</p>
             </div>
-            <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
+            <div className="bg-card rounded-2xl p-5 border border-border">
               <p className="text-xs text-muted-foreground mb-1">Sessões</p>
-              <p className="text-2xl font-bold text-white tracking-tight">{sessionsCount}</p>
+              <p className="text-2xl font-bold text-foreground tracking-tight">{sessionsCount}</p>
               <p className="text-[11px] text-muted-foreground mt-1">sessões de foco</p>
             </div>
-            <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
+            <div className="bg-card rounded-2xl p-5 border border-border">
               <p className="text-xs text-muted-foreground mb-1">Área principal</p>
-              <p className="text-lg font-bold text-white tracking-tight truncate">{topProjectName}</p>
+              <p className="text-lg font-bold text-foreground tracking-tight truncate">{topProjectName}</p>
               <p className="text-[11px] text-muted-foreground mt-1">mais focado</p>
             </div>
-            <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
+            <div className="bg-card rounded-2xl p-5 border border-border">
               <p className="text-xs text-muted-foreground mb-1">Sequência</p>
-              <p className="text-2xl font-bold text-white tracking-tight">{streak} <span className="text-sm font-normal text-muted-foreground">dias</span></p>
+              <p className="text-2xl font-bold text-foreground tracking-tight">{streak} <span className="text-sm font-normal text-muted-foreground">dias</span></p>
               <p className="text-[11px] text-green-live mt-1 flex items-center gap-1">
                 <span>↑ dias seguidos</span>
               </p>
@@ -421,9 +421,9 @@ export default function OverviewPage() {
           </div>
 
           {/* Log Card */}
-          <div className="xl:col-span-2 bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A] flex flex-col justify-between">
+          <div className="xl:col-span-2 bg-card rounded-2xl p-5 border border-border flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-foreground">
                 {viewMode === "hoje" ? "Log Diário" : 
                  viewMode === "esta-semana" ? "Log da Semana" :
                  viewMode === "este-mes" ? "Log do Mês" : "Log do Ano"}
@@ -453,9 +453,9 @@ export default function OverviewPage() {
                       </span>
                     </div>
                   ))}
-                  <div className="px-3 py-1.5 rounded-xl bg-[#242424] border border-[#333333] flex items-center">
-                    <span className="text-[10px] font-bold text-[#999999] uppercase tracking-wider">
-                      Total: <span className="text-white">{formatLogDuration(totalSeconds)}</span>
+                  <div className="px-3 py-1.5 rounded-xl bg-accent border border-border flex items-center">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Total: <span className="text-foreground">{formatLogDuration(totalSeconds)}</span>
                     </span>
                   </div>
                 </>
@@ -467,10 +467,10 @@ export default function OverviewPage() {
         {/* Charts row */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {/* Dynamic Bar Chart */}
-          <div className="col-span-2 bg-[#1A1A1A] rounded-2xl p-6 border border-[#2A2A2A] overflow-x-auto">
+          <div className="col-span-2 bg-card rounded-2xl p-6 border border-border overflow-x-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-foreground">
                   {viewMode === "hoje" ? "Foco do dia" : "Foco ao longo do tempo"}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -490,8 +490,8 @@ export default function OverviewPage() {
                 <div className="flex w-full h-full items-center justify-center gap-12">
                   <div className="flex flex-col items-center justify-end h-full w-32 group relative">
                     {/* Tooltip on hover */}
-                    <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-[#2A2A2A] border border-[#333333] text-white text-[10px] p-2 rounded shadow-xl w-max min-w-[120px]">
-                      <div className="font-semibold text-xs border-b border-[#333333] pb-1 mb-1 text-center">
+                    <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-accent border border-border text-foreground text-[10px] p-2 rounded shadow-xl w-max min-w-[120px]">
+                      <div className="font-semibold text-xs border-b border-border pb-1 mb-1 text-center">
                         Hoje
                       </div>
                       <div className="font-medium text-cyan-glow mb-1">
@@ -503,7 +503,7 @@ export default function OverviewPage() {
                             <div key={idx} className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: b.color }} />
-                                <span className="text-[#999999] truncate max-w-[80px]">{b.name}</span>
+                                <span className="text-muted-foreground truncate max-w-[80px]">{b.name}</span>
                               </div>
                               <span className="tabular-nums">
                                 {Math.floor(b.value / 3600)}h {Math.floor((b.value % 3600) / 60)}m
@@ -512,7 +512,7 @@ export default function OverviewPage() {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-[#666666] text-center mt-1">Sem foco</div>
+                        <div className="text-muted-foreground/60 text-center mt-1">Sem foco</div>
                       )}
                     </div>
                     <div
@@ -523,12 +523,12 @@ export default function OverviewPage() {
                         boxShadow: totalSeconds > 0 ? "0 0 12px rgba(0, 245, 255, 0.3)" : "none",
                       }}
                     />
-                    <span className="text-sm font-medium text-white mt-3 shrink-0">Hoje</span>
+                    <span className="text-sm font-medium text-foreground mt-3 shrink-0">Hoje</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Total acumulado</span>
                     <span className="text-5xl font-bold text-cyan-glow tabular-nums">{formatTotal()}</span>
-                    <span className="text-sm text-[#555555] mt-1">horas focadas</span>
+                    <span className="text-sm text-muted-foreground/50 mt-1">horas focadas</span>
                   </div>
                 </div>
               ) : (
@@ -542,8 +542,8 @@ export default function OverviewPage() {
                     >
                       <div className="group relative w-full flex items-end justify-center">
                         {/* Tooltip on hover */}
-                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-[#2A2A2A] border border-[#333333] text-white text-[10px] p-2 rounded shadow-xl w-max min-w-[120px]">
-                          <div className="font-semibold text-xs border-b border-[#333333] pb-1 mb-1 text-center">
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-accent border border-border text-foreground text-[10px] p-2 rounded shadow-xl w-max min-w-[120px]">
+                          <div className="font-semibold text-xs border-b border-border pb-1 mb-1 text-center">
                             {d.label}
                           </div>
                           <div className="font-medium text-cyan-glow mb-1">
@@ -555,7 +555,7 @@ export default function OverviewPage() {
                                 <div key={idx} className="flex items-center justify-between gap-3">
                                   <div className="flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: b.color }} />
-                                    <span className="text-[#999999] truncate max-w-[80px]">{b.name}</span>
+                                    <span className="text-muted-foreground truncate max-w-[80px]">{b.name}</span>
                                   </div>
                                   <span className="tabular-nums">
                                     {Math.floor(b.value / 3600)}h {Math.floor((b.value % 3600) / 60)}m
@@ -564,7 +564,7 @@ export default function OverviewPage() {
                               ))}
                             </div>
                           ) : (
-                            <div className="text-[#666666] text-center mt-1">Sem foco</div>
+                            <div className="text-muted-foreground/60 text-center mt-1">Sem foco</div>
                           )}
                         </div>
                         <div
@@ -576,7 +576,7 @@ export default function OverviewPage() {
                           }}
                         />
                       </div>
-                      <span className="text-[10px] text-[#555555] shrink-0 truncate max-w-full capitalize">{d.label}</span>
+                      <span className="text-[10px] text-muted-foreground/50 shrink-0 truncate max-w-full capitalize">{d.label}</span>
                     </div>
                   );
                 })
@@ -585,8 +585,8 @@ export default function OverviewPage() {
           </div>
 
           {/* Donut chart - Distribution by project */}
-          <div className="bg-[#1A1A1A] rounded-2xl p-6 border border-[#2A2A2A]">
-            <h3 className="text-sm font-semibold text-white mb-1">
+          <div className="bg-card rounded-2xl p-6 border border-border">
+            <h3 className="text-sm font-semibold text-foreground mb-1">
               Distribuição por projeto
             </h3>
             <p className="text-xs text-muted-foreground mb-6">
@@ -603,7 +603,7 @@ export default function OverviewPage() {
                       cy="80"
                       r="60"
                       fill="none"
-                      stroke="#2A2A2A"
+                      stroke="var(--border)"
                       strokeWidth="16"
                     />
                   ) : (
@@ -636,7 +636,7 @@ export default function OverviewPage() {
                   )}
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-2xl font-bold text-foreground">
                     {formatTotal()}
                   </span>
                   <span className="text-[10px] text-muted-foreground">Total</span>
@@ -663,7 +663,7 @@ export default function OverviewPage() {
                       />
                       <span className="text-xs text-muted-foreground truncate max-w-[100px]">{p.name}</span>
                     </div>
-                    <span className="text-xs font-medium text-white shrink-0">
+                    <span className="text-xs font-medium text-foreground shrink-0">
                       {pFormat}
                     </span>
                   </div>
@@ -685,12 +685,12 @@ export default function OverviewPage() {
           });
           const maxDaySeconds = Math.max(...Array.from(dayDurations.values()), 1);
           const getIntensity = (seconds: number) => {
-            if (seconds === 0) return "bg-[#1A1A1A]";
+            if (seconds === 0) return "bg-muted border border-border";
             const pct = seconds / maxDaySeconds;
-            if (pct < 0.25) return "bg-cyan-glow/20";
-            if (pct < 0.5) return "bg-cyan-glow/40";
-            if (pct < 0.75) return "bg-cyan-glow/60";
-            return "bg-cyan-glow/90";
+            if (pct < 0.25) return "bg-cyan-glow/20 border border-cyan-glow/10";
+            if (pct < 0.5) return "bg-cyan-glow/40 border border-cyan-glow/20";
+            if (pct < 0.75) return "bg-cyan-glow/60 border border-cyan-glow/30";
+            return "bg-cyan-glow/90 border border-cyan-glow/50";
           };
           // Group by weeks
           const weeks: Date[][] = [];
@@ -704,15 +704,15 @@ export default function OverviewPage() {
           });
 
           return (
-            <div className="bg-[#1A1A1A] rounded-2xl p-6 border border-[#2A2A2A] mb-8">
+            <div className="bg-card rounded-2xl p-6 border border-border mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-white">Mapa de contribuições</h3>
+                  <h3 className="text-sm font-semibold text-foreground">Mapa de contribuições</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">Consistência ao longo do ano</p>
                 </div>
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                   <span>Menos</span>
-                  <span className="w-3 h-3 rounded-sm bg-[#1A1A1A] border border-[#2A2A2A]" />
+                  <span className="w-3 h-3 rounded-sm bg-muted border border-border" />
                   <span className="w-3 h-3 rounded-sm bg-cyan-glow/20" />
                   <span className="w-3 h-3 rounded-sm bg-cyan-glow/40" />
                   <span className="w-3 h-3 rounded-sm bg-cyan-glow/60" />
@@ -726,12 +726,16 @@ export default function OverviewPage() {
                     {week.map(d => {
                       const key = format(d, "yyyy-MM-dd");
                       const secs = dayDurations.get(key) || 0;
+                      const label = `${format(d, "dd/MM")}: ${secs > 0 ? formatDuration(secs) : "Sem foco"}`;
                       return (
                         <div
                           key={key}
-                          className={`w-3 h-3 rounded-sm ${getIntensity(secs)} transition-colors`}
-                          title={`${format(d, "dd/MM")}: ${secs > 0 ? formatDuration(secs) : "Sem foco"}`}
-                        />
+                          className={`w-[14px] h-[14px] rounded-sm ${getIntensity(secs)} transition-colors cursor-default group/cell relative`}
+                        >
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/cell:flex bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded shadow-lg border border-border whitespace-nowrap z-50 font-medium">
+                            {label}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -742,10 +746,10 @@ export default function OverviewPage() {
         })()}
 
         {/* Focus log table */}
-        <div className="bg-[#1A1A1A] rounded-2xl p-6 border border-[#2A2A2A]">
+        <div className="bg-card rounded-2xl p-6 border border-border">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-sm font-semibold text-white">
+              <h3 className="text-sm font-semibold text-foreground">
                 Onde você focou
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -781,17 +785,17 @@ export default function OverviewPage() {
 
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#2A2A2A]">
-                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-[#555555] pb-3">
+              <tr className="border-b border-border">
+                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
                   Data/Hora
                 </th>
-                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-[#555555] pb-3">
+                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
                   Projeto
                 </th>
-                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-[#555555] pb-3">
+                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
                   Tarefa
                 </th>
-                <th className="text-right text-[11px] font-medium uppercase tracking-wider text-[#555555] pb-3">
+                <th className="text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
                   Duração
                 </th>
               </tr>
@@ -829,27 +833,27 @@ export default function OverviewPage() {
                       <td className="py-3">
                         <div className="flex items-center gap-2">
                           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: getProjectColor(entry.projectId) }} />
-                          <span className="text-sm text-white">{getProjectName(entry.projectId)}</span>
+                          <span className="text-sm text-foreground">{getProjectName(entry.projectId)}</span>
                         </div>
                       </td>
                       <td className="py-3 text-sm text-muted-foreground max-w-[200px] truncate">
                         {entry.taskName}
                       </td>
-                      <td className="py-3 text-sm text-white text-right font-medium pr-2 tabular-nums">
+                      <td className="py-3 text-sm text-foreground text-right font-medium pr-2 tabular-nums">
                         <div className="flex items-center justify-end gap-3">
                           <span>{dFormat}</span>
                           <DropdownMenu>
                             <DropdownMenuTrigger
                               render={
-                                <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-[#2A2A2A] hover:text-white transition-all cursor-pointer" />
+                                <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent hover:text-foreground transition-all cursor-pointer" />
                               }
                             >
                               <MoreHorizontal className="h-4 w-4" />
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-32 bg-[#1A1A1A] border-[#2A2A2A]">
+                            <DropdownMenuContent align="end" className="w-32 bg-card border-border">
                               <DropdownMenuItem
                                 onClick={() => setEditingEntry(entry)}
-                                className="focus:bg-[#242424] cursor-pointer flex items-center gap-2"
+                                className="focus:bg-accent cursor-pointer flex items-center gap-2"
                               >
                                 <Pencil className="h-3.5 w-3.5" />
                                 Editar
@@ -877,8 +881,8 @@ export default function OverviewPage() {
             </tbody>
             {filteredEntries.length > 0 && (
               <tfoot>
-                <tr className="border-t border-[#2A2A2A]">
-                  <td colSpan={3} className="pt-3 pl-2 text-sm font-semibold text-white">Total do Período</td>
+                <tr className="border-t border-border">
+                  <td colSpan={3} className="pt-3 pl-2 text-sm font-semibold text-foreground">Total do Período</td>
                   <td className="pt-3 pr-2 text-sm font-bold text-cyan-glow text-right tabular-nums">
                     {formatTotal()}
                   </td>

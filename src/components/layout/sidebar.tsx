@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play } from "lucide-react";
+import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "@/store/useTimerStore";
+import { useTheme } from "next-themes";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -17,18 +18,23 @@ export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { activeTimer } = useAppStore();
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-[#1A1A1A] bg-[#111111] py-6 transition-all duration-300",
+        "flex h-full flex-col border-r border-border bg-sidebar py-6 transition-all duration-300",
         isCollapsed ? "w-[80px] items-center" : "w-[220px] px-4"
       )}
     >
       {/* Collapse button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-4 right-[-14px] flex h-7 w-7 items-center justify-center rounded-full bg-[#1A1A1A] border border-[#2A2A2A] text-muted-foreground hover:text-white transition-colors z-50"
+        className="absolute top-4 right-[-14px] flex h-7 w-7 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-foreground transition-colors z-50"
       >
         {isCollapsed ? (
           <PanelLeftOpen className="h-3.5 w-3.5" />
@@ -45,7 +51,7 @@ export function Sidebar() {
           </svg>
         </div>
         {!isCollapsed && (
-          <span className="text-lg font-bold tracking-tight text-white line-clamp-1">
+          <span className="text-lg font-bold tracking-tight text-foreground line-clamp-1">
             FocusTrack
           </span>
         )}
@@ -53,7 +59,7 @@ export function Sidebar() {
 
       {/* Navigation label */}
       {!isCollapsed && (
-        <p className="mb-3 px-2 text-[11px] font-medium uppercase tracking-widest text-[#555555]">
+        <p className="mb-3 px-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground/50">
           Menu
         </p>
       )}
@@ -71,8 +77,8 @@ export function Sidebar() {
                 "group flex items-center rounded-xl py-2.5 font-medium transition-all duration-200",
                 isCollapsed ? "justify-center px-0 w-12 h-12 mx-auto" : "gap-3 px-3 w-full",
                 isActive
-                  ? "bg-[#1A1A1A] text-white"
-                  : "text-[#666666] hover:bg-[#1A1A1A]/50 hover:text-[#999999]"
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground/80"
               )}
               title={isCollapsed ? item.name : undefined}
             >
@@ -80,7 +86,7 @@ export function Sidebar() {
                 className={cn(
                   "shrink-0 transition-colors",
                   isCollapsed ? "h-[22px] w-[22px]" : "h-[18px] w-[18px]",
-                  isActive ? "text-cyan-glow" : "text-[#555555] group-hover:text-[#777777]"
+                  isActive ? "text-cyan-glow" : "text-muted-foreground/60 group-hover:text-muted-foreground"
                 )}
                 strokeWidth={isActive ? 2.5 : 2}
               />
@@ -90,11 +96,30 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* Theme toggle */}
+      <div className={cn("mb-3 w-full", isCollapsed ? "flex justify-center" : "px-1")}>
+        <button
+          onClick={toggleTheme}
+          className={cn(
+            "flex items-center rounded-xl transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-accent/50",
+            isCollapsed ? "justify-center w-10 h-10" : "gap-3 px-3 py-2 w-full"
+          )}
+          title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+        >
+          {theme === "dark" ? (
+            <Sun className={cn("shrink-0", isCollapsed ? "h-[20px] w-[20px]" : "h-[18px] w-[18px]")} strokeWidth={2} />
+          ) : (
+            <Moon className={cn("shrink-0", isCollapsed ? "h-[20px] w-[20px]" : "h-[18px] w-[18px]")} strokeWidth={2} />
+          )}
+          {!isCollapsed && <span className="text-sm">{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
+        </button>
+      </div>
+
       {/* User Profile / Mini Timer */}
-      <div className={cn("mt-auto border-t border-[#1A1A1A] pt-4 w-full", isCollapsed ? "flex justify-center" : "")}>
+      <div className={cn("mt-auto border-t border-border pt-4 w-full", isCollapsed ? "flex justify-center" : "")}>
         {(activeTimer && pathname !== "/") ? (
           <Link href="/" className={cn("flex items-center gap-3 rounded-xl bg-cyan-glow/10 border border-cyan-glow/20 transition-all hover:bg-cyan-glow/20", isCollapsed ? "p-2 justify-center" : "px-3 py-2.5")}>
-            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0D0D0D] border border-cyan-glow/50">
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background border border-cyan-glow/50">
               <span className="absolute flex h-2 w-2 top-0 right-0">
                 <span className="animate-live absolute inline-flex h-full w-full rounded-full bg-green-live opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-green-live"></span>
@@ -103,7 +128,7 @@ export function Sidebar() {
             </div>
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-medium text-white truncate">{activeTimer.taskName || "Foco ativo"}</span>
+                <span className="text-sm font-medium text-foreground truncate">{activeTimer.taskName || "Foco ativo"}</span>
                 <span className="text-[11px] text-cyan-glow font-bold tabular-nums">Em andamento...</span>
               </div>
             )}
@@ -115,8 +140,8 @@ export function Sidebar() {
             </div>
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-medium text-white truncate">Francisco</span>
-                <span className="text-[11px] text-[#555555] truncate">Logado</span>
+                <span className="text-sm font-medium text-foreground truncate">Francisco</span>
+                <span className="text-[11px] text-muted-foreground truncate">Logado</span>
               </div>
             )}
           </div>

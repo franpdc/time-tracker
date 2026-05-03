@@ -73,9 +73,9 @@ export default function ProjetosPage() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-[#1A1A1A]">
+      <header className="flex items-center justify-between px-8 py-5 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold text-white">Projetos</h1>
+          <h1 className="text-xl font-bold text-foreground">Projetos</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Organize suas áreas de foco em pastas e projetos
           </p>
@@ -86,7 +86,7 @@ export default function ProjetosPage() {
               setAddingProjectToFolderId("root");
               setNewProjectName("");
             }}
-            className="flex items-center gap-2 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] px-4 py-2 text-sm font-medium text-white hover:bg-[#242424] transition-all duration-200 active:scale-95"
+            className="flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition-all duration-200 active:scale-95"
           >
             <Plus className="h-4 w-4" />
             Novo projeto
@@ -111,11 +111,11 @@ export default function ProjetosPage() {
           
           {/* Add Root Project Inline Input */}
           {addingProjectToFolderId === "root" && (
-            <div className="flex items-center gap-3 px-6 py-4 bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden">
+            <div className="flex items-center gap-3 px-6 py-4 bg-card rounded-2xl border border-border overflow-hidden">
                {/* Color Picker Simple */}
                <div className="flex items-center gap-1 mr-2 relative group">
                   <div className="h-4 w-4 rounded-full border border-[#333] cursor-pointer" style={{ backgroundColor: newProjectColor }}></div>
-                  <div className="absolute top-6 left-0 hidden group-hover:flex bg-[#242424] border border-[#333] rounded-lg p-1.5 gap-1.5 z-10">
+                  <div className="absolute top-6 left-0 hidden group-hover:flex bg-accent border border-[#333] rounded-lg p-1.5 gap-1.5 z-10">
                      {colors.map(c => (
                        <button key={c} onClick={() => setNewProjectColor(c)} className="w-4 h-4 rounded-full hover:scale-110 transition-transform" style={{backgroundColor: c}} />
                      ))}
@@ -128,11 +128,11 @@ export default function ProjetosPage() {
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddProject(null)}
-                className="flex-1 bg-transparent border-none text-white text-sm focus:outline-none focus:ring-0"
+                className="flex-1 bg-transparent border-none text-foreground text-sm focus:outline-none focus:ring-0"
               />
               <button
                 onClick={() => setAddingProjectToFolderId(null)}
-                className="p-1.5 text-muted-foreground hover:text-white rounded-md hover:bg-[#2A2A2A]"
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -147,12 +147,12 @@ export default function ProjetosPage() {
 
           {/* Root Projects List */}
           {rootProjects.length > 0 && (
-            <div className="bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden mb-6">
+            <div className="bg-card rounded-2xl border border-border overflow-hidden mb-6">
               {rootProjects.map((project, idx) => (
                 <div
                   key={project.id}
                   className={`flex items-center justify-between px-6 py-3.5 hover:bg-[#1E1E1E] transition-colors cursor-pointer group ${
-                    idx < rootProjects.length - 1 ? "border-b border-[#2A2A2A]/30" : ""
+                    idx < rootProjects.length - 1 ? "border-b border-border/30" : ""
                   }`}
                 >
                   <div className="flex items-center gap-3 pl-2">
@@ -160,7 +160,7 @@ export default function ProjetosPage() {
                       className="h-3 w-3 rounded-full"
                       style={{ backgroundColor: project.color }}
                     />
-                    <span className="text-sm text-white font-medium">
+                    <span className="text-sm text-foreground font-medium">
                       {project.name}
                     </span>
                   </div>
@@ -170,14 +170,14 @@ export default function ProjetosPage() {
                     </span>
                     <DropdownMenu>
                       <DropdownMenuTrigger>
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-[#2A2A2A] hover:text-white transition-all outline-none cursor-pointer">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent hover:text-foreground transition-all outline-none cursor-pointer">
                           <MoreHorizontal className="h-4 w-4" />
                         </div>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44 bg-[#1A1A1A] border-[#2A2A2A]">
+                      <DropdownMenuContent align="end" className="w-44 bg-card border-border">
                         <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mudar cor</div>
                         <ColorPickerMenu currentColor={project.color} onSelect={(color) => updateProject(project.id, { color })} />
-                        <div className="h-px bg-[#2A2A2A] my-1" />
+                        <div className="h-px bg-accent my-1" />
                         <DropdownMenuItem
                           onClick={() => deleteProject(project.id)}
                           className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer flex items-center gap-2"
@@ -193,7 +193,7 @@ export default function ProjetosPage() {
 
           {/* Add Folder Inline Input */}
           {isAddingFolder && (
-            <div className="bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden p-4 flex items-center gap-3">
+            <div className="bg-card rounded-2xl border border-border overflow-hidden p-4 flex items-center gap-3">
               <FolderOpen className="h-5 w-5 text-muted-foreground" />
               <input
                 autoFocus
@@ -202,11 +202,11 @@ export default function ProjetosPage() {
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddFolder()}
-                className="flex-1 bg-transparent border-none text-white text-sm focus:outline-none focus:ring-0"
+                className="flex-1 bg-transparent border-none text-foreground text-sm focus:outline-none focus:ring-0"
               />
               <button
                 onClick={() => setIsAddingFolder(false)}
-                className="p-1.5 text-muted-foreground hover:text-white rounded-md hover:bg-[#2A2A2A]"
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -220,7 +220,7 @@ export default function ProjetosPage() {
           )}
 
           {folders.length === 0 && !isAddingFolder && rootProjects.length === 0 && addingProjectToFolderId !== "root" && (
-            <div className="text-center py-12 border border-dashed border-[#2A2A2A] rounded-2xl">
+            <div className="text-center py-12 border border-dashed border-border rounded-2xl">
               <FolderOpen className="h-10 w-10 text-[#333] mx-auto mb-3" />
               <p className="text-[#666] text-sm">Nenhuma pasta criada ainda.</p>
               <p className="text-[#444] text-xs mt-1">Crie uma pasta para organizar seus projetos.</p>
@@ -232,7 +232,7 @@ export default function ProjetosPage() {
             return (
               <div
                 key={folder.id}
-                className="bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden"
+                className="bg-card rounded-2xl border border-border overflow-hidden"
               >
                 {/* Folder header */}
                 <div className="flex w-full items-center justify-between px-6 py-4 hover:bg-[#1E1E1E] transition-colors group">
@@ -246,7 +246,7 @@ export default function ProjetosPage() {
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     )}
                     <FolderOpen className="h-5 w-5" style={{ color: folder.color }} />
-                    <span className="text-sm font-semibold text-white">
+                    <span className="text-sm font-semibold text-foreground">
                       {folder.name}
                     </span>
                     <span className="text-xs text-muted-foreground">
@@ -255,14 +255,14 @@ export default function ProjetosPage() {
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger>
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-[#2A2A2A] hover:text-white transition-colors cursor-pointer">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
                         <MoreHorizontal className="h-4 w-4" />
                       </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44 bg-[#1A1A1A] border-[#2A2A2A]">
+                    <DropdownMenuContent align="end" className="w-44 bg-card border-border">
                       <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mudar cor</div>
                       <ColorPickerMenu currentColor={folder.color} onSelect={(color) => updateFolder(folder.id, { color })} />
-                      <div className="h-px bg-[#2A2A2A] my-1" />
+                      <div className="h-px bg-accent my-1" />
                       <DropdownMenuItem
                         onClick={() => deleteFolder(folder.id)}
                         className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer flex items-center gap-2"
@@ -275,7 +275,7 @@ export default function ProjetosPage() {
 
                 {/* Projects list */}
                 {folder.isOpen && (
-                  <div className="border-t border-[#2A2A2A]/50">
+                  <div className="border-t border-border/50">
                     {folderProjects.length === 0 && addingProjectToFolderId !== folder.id && (
                        <div className="px-6 py-4 text-xs text-muted-foreground text-center">
                          Nenhum projeto nesta pasta.
@@ -286,7 +286,7 @@ export default function ProjetosPage() {
                         key={project.id}
                         className={`flex items-center justify-between px-6 py-3.5 hover:bg-[#1E1E1E] transition-colors cursor-pointer group/project ${
                           idx < folderProjects.length - 1 || addingProjectToFolderId === folder.id
-                            ? "border-b border-[#2A2A2A]/30"
+                            ? "border-b border-border/30"
                             : ""
                         }`}
                       >
@@ -295,7 +295,7 @@ export default function ProjetosPage() {
                             className="h-3 w-3 rounded-full"
                             style={{ backgroundColor: project.color }}
                           />
-                          <span className="text-sm text-white font-medium">
+                          <span className="text-sm text-foreground font-medium">
                             {project.name}
                           </span>
                         </div>
@@ -305,14 +305,14 @@ export default function ProjetosPage() {
                           </span>
                           <DropdownMenu>
                             <DropdownMenuTrigger>
-                              <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover/project:opacity-100 hover:bg-[#2A2A2A] hover:text-white transition-all cursor-pointer">
+                              <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover/project:opacity-100 hover:bg-accent hover:text-foreground transition-all cursor-pointer">
                                 <MoreHorizontal className="h-4 w-4" />
                               </div>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-44 bg-[#1A1A1A] border-[#2A2A2A]">
+                            <DropdownMenuContent align="end" className="w-44 bg-card border-border">
                               <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mudar cor</div>
                               <ColorPickerMenu currentColor={project.color} onSelect={(color) => updateProject(project.id, { color })} />
-                              <div className="h-px bg-[#2A2A2A] my-1" />
+                              <div className="h-px bg-accent my-1" />
                               <DropdownMenuItem
                                 onClick={() => deleteProject(project.id)}
                                 className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer flex items-center gap-2"
@@ -326,11 +326,11 @@ export default function ProjetosPage() {
 
                     {/* Add project inline input */}
                     {addingProjectToFolderId === folder.id ? (
-                      <div className="flex items-center gap-3 px-6 py-3 pl-10 border-t border-[#2A2A2A]/30 bg-[#1A1A1A]/50">
+                      <div className="flex items-center gap-3 px-6 py-3 pl-10 border-t border-border/30 bg-card/50">
                          {/* Color Picker Simple */}
                          <div className="flex items-center gap-1 mr-2 relative group">
                             <div className="h-4 w-4 rounded-full border border-[#333] cursor-pointer" style={{ backgroundColor: newProjectColor }}></div>
-                            <div className="absolute top-6 left-0 hidden group-hover:flex bg-[#242424] border border-[#333] rounded-lg p-1.5 gap-1.5 z-10">
+                            <div className="absolute top-6 left-0 hidden group-hover:flex bg-accent border border-[#333] rounded-lg p-1.5 gap-1.5 z-10">
                                {colors.map(c => (
                                  <button key={c} onClick={() => setNewProjectColor(c)} className="w-4 h-4 rounded-full hover:scale-110 transition-transform" style={{backgroundColor: c}} />
                                ))}
@@ -343,11 +343,11 @@ export default function ProjetosPage() {
                           value={newProjectName}
                           onChange={(e) => setNewProjectName(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleAddProject(folder.id)}
-                          className="flex-1 bg-transparent border-none text-white text-sm focus:outline-none focus:ring-0"
+                          className="flex-1 bg-transparent border-none text-foreground text-sm focus:outline-none focus:ring-0"
                         />
                         <button
                           onClick={() => setAddingProjectToFolderId(null)}
-                          className="p-1.5 text-muted-foreground hover:text-white rounded-md hover:bg-[#2A2A2A]"
+                          className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -364,7 +364,7 @@ export default function ProjetosPage() {
                           setAddingProjectToFolderId(folder.id);
                           setNewProjectName("");
                         }}
-                        className="flex w-full items-center gap-3 px-6 py-3 pl-[52px] text-[#555555] hover:text-cyan-glow hover:bg-[#1E1E1E] transition-colors"
+                        className="flex w-full items-center gap-3 px-6 py-3 pl-[52px] text-muted-foreground/50 hover:text-cyan-glow hover:bg-[#1E1E1E] transition-colors"
                       >
                         <Plus className="h-4 w-4" />
                         <span className="text-xs font-medium">Adicionar projeto</span>
@@ -391,13 +391,13 @@ export default function ProjetosPage() {
             const groupedList = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
 
             return (
-              <div className="bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden mt-8">
+              <div className="bg-card rounded-2xl border border-border overflow-hidden mt-8">
                 <div className="flex w-full items-center justify-between px-6 py-4 bg-[#1E1E1E]">
                   <div className="flex items-center gap-3">
                     <div className="h-5 w-5 flex items-center justify-center">
                       <span className="h-2.5 w-2.5 rounded-full bg-[#555555]"></span>
                     </div>
-                    <span className="text-sm font-semibold text-white">
+                    <span className="text-sm font-semibold text-foreground">
                       Sem projeto
                     </span>
                     <span className="text-xs text-muted-foreground">
@@ -405,7 +405,7 @@ export default function ProjetosPage() {
                     </span>
                   </div>
                 </div>
-                <div className="border-t border-[#2A2A2A]/50">
+                <div className="border-t border-border/50">
                   {groupedList.map(([name, duration], idx) => {
                     const formattedTime = formatDuration(duration);
                     
@@ -413,7 +413,7 @@ export default function ProjetosPage() {
                       <div
                         key={name}
                         className={`flex items-center justify-between px-6 py-3.5 hover:bg-[#1E1E1E] transition-colors group ${
-                          idx < groupedList.length - 1 ? "border-b border-[#2A2A2A]/30" : ""
+                          idx < groupedList.length - 1 ? "border-b border-border/30" : ""
                         }`}
                       >
                         <div className="flex items-center gap-3 pl-7">
