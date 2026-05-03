@@ -5,16 +5,23 @@ import { format, startOfWeek, addDays, isSameDay, getHours, getMinutes } from "d
 import { ptBR } from "date-fns/locale";
 import { useAppStore, TimeEntry } from "@/store/useTimerStore";
 import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { EditEntryModal } from "./edit-entry-modal";
 import { AddManualEntryModal } from "./add-manual-entry-modal";
 
-export function CalendarView() {
+export function CalendarView({ 
+  onViewModeChange,
+  className
+}: { 
+  onViewModeChange?: (mode: "daily" | "weekly") => void;
+  className?: string;
+}) {
   const { entries, projects, activeTimer } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [isEditingActive, setIsEditingActive] = useState(false);
   const [addEntryData, setAddEntryData] = useState<{ date: string; startTime: string } | null>(null);
-  const [viewMode, setViewMode] = useState<"daily" | "weekly">("weekly");
+  const [viewMode, setViewMode] = useState<"daily" | "weekly">("daily");
   const [activeElapsed, setActiveElapsed] = useState(0);
 
   // Live timer for active session
@@ -37,11 +44,16 @@ export function CalendarView() {
   }, [activeTimer]);
   
   // Zoom levels: pixels per minute
-  // 1px/min = 60px/hour. 1.5px/min = 90px/hour. 2px/min = 120px/hour.
-  const zoomLevels = [0.8, 1.2, 1.8];
+  // 0.4 = 24px/h (24h view), 0.7 = 42px/h, 1.1 = 66px/h, 1.8 = 108px/h, 2.6 = 156px/h, 3.8 = 228px/h (15m detail)
+  const zoomLevels = [0.4, 0.7, 1.1, 1.8, 2.6, 3.8];
   const [zoomIndex, setZoomIndex] = useState(1);
   const pixelsPerMinute = zoomLevels[zoomIndex];
   const hourHeight = pixelsPerMinute * 60;
+
+  const handleViewModeChange = (mode: "daily" | "weekly") => {
+    setViewMode(mode);
+    onViewModeChange?.(mode);
+  };
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday start
   const weekDays = viewMode === "weekly"
@@ -80,7 +92,7 @@ export function CalendarView() {
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl shadow-premium overflow-hidden flex flex-col h-[70vh] min-h-[600px]">
+    <div className={cn("bg-card border border-border rounded-2xl shadow-premium overflow-hidden flex flex-col h-[70vh] min-h-[600px] transition-all duration-500 ease-in-out", className)}>
       <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-border bg-surface-hover/50 gap-4">
         <div className="flex items-center gap-2">
           <button
@@ -105,7 +117,7 @@ export function CalendarView() {
         <div className="flex items-center gap-4">
           <div className="flex items-center bg-background p-1 rounded-lg border border-border">
             <button
-              onClick={() => setViewMode("daily")}
+              onClick={() => handleViewModeChange("daily")}
               className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
                 viewMode === "daily" 
                   ? "bg-card text-foreground shadow-premium border border-border" 
@@ -115,7 +127,7 @@ export function CalendarView() {
               Diário
             </button>
             <button
-              onClick={() => setViewMode("weekly")}
+              onClick={() => handleViewModeChange("weekly")}
               className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
                 viewMode === "weekly" 
                   ? "bg-card text-foreground shadow-premium border border-border" 
@@ -135,7 +147,16 @@ export function CalendarView() {
             >
               <ZoomOut className="h-4 w-4" />
             </button>
-            <div className="w-px h-4 bg-border"></div>
+            <div className="flex items-center px-1 min-w-[70px] justify-center">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 tabular-nums">
+                {zoomIndex === 0 && "24h"}
+                {zoomIndex === 1 && "12h"}
+                {zoomIndex === 2 && "8h"}
+                {zoomIndex === 3 && "4h"}
+                {zoomIndex === 4 && "2h"}
+                {zoomIndex === 5 && "Focus"}
+              </span>
+            </div>
             <button
               onClick={() => setZoomIndex(Math.min(zoomLevels.length - 1, zoomIndex + 1))}
               disabled={zoomIndex === zoomLevels.length - 1}

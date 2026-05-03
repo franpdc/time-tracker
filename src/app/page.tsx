@@ -6,6 +6,7 @@ import { Play, Square, Pause, FolderOpen, History, Target } from "lucide-react";
 import { format, isSameDay, startOfDay, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatDuration } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { AddManualEntryModal } from "@/components/timer/add-manual-entry-modal";
 import { CalendarView } from "@/components/timer/calendar-view";
@@ -146,6 +147,8 @@ export default function Home() {
 
   const selectedProject = projects.find(p => p.id === projectId);
 
+  const [calendarViewMode, setCalendarViewMode] = useState<"daily" | "weekly">("daily");
+
   const handleGoalSave = () => {
     const val = parseInt(goalInput);
     if (!isNaN(val) && val > 0) {
@@ -232,7 +235,10 @@ export default function Home() {
             <div className="max-w-[1400px] mx-auto px-4 sm:px-8 pt-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* Left Column: Timer & Stats */}
-                <div className="flex flex-col">
+                <div className={cn(
+                  "flex flex-col transition-all duration-500 ease-in-out",
+                  calendarViewMode === "weekly" && "lg:opacity-0 lg:pointer-events-none lg:w-0 lg:h-0 lg:overflow-hidden lg:m-0"
+                )}>
                   {/* Daily Goal Progress */}
                   {goalSeconds > 0 && (
                     <div className="mb-8">
@@ -434,7 +440,7 @@ export default function Home() {
                   </div>
 
                   {/* Quick Stats Row */}
-                  <div className="grid grid-cols-3 gap-3 mb-8">
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="bg-card rounded-2xl p-4 border border-border shadow-card transition-all duration-200 hover:border-cyan-glow/20">
                       <p className="text-2xs text-muted-foreground uppercase tracking-[0.14em] font-medium mb-1.5">Hoje</p>
                       <p className="text-2xl font-bold text-cyan-glow tabular-nums tracking-[-0.02em]">{formatDuration(todaySeconds)}</p>
@@ -452,15 +458,30 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Right Column: Daily Log Card */}
-                <div className="flex flex-col">
-                  <DailyLogCard />
+                {/* Right Column: Daily Log Card + Calendar */}
+                <div className={cn(
+                  "flex flex-col transition-all duration-500 ease-in-out",
+                  calendarViewMode === "weekly" && "lg:col-span-2"
+                )}>
+                  <div className={cn(
+                    "transition-all duration-500 ease-in-out",
+                    calendarViewMode === "weekly" && "lg:opacity-0 lg:h-0 lg:overflow-hidden lg:m-0"
+                  )}>
+                    <DailyLogCard />
+                  </div>
+                  
+                  <div className={cn(
+                    "mt-8 transition-all duration-500 ease-in-out",
+                    calendarViewMode === "weekly" && "mt-0"
+                  )}>
+                    <CalendarView 
+                      onViewModeChange={setCalendarViewMode}
+                      className={cn(
+                        calendarViewMode === "weekly" ? "h-[85vh]" : "h-[460px]"
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
-
-              {/* Calendar View */}
-              <div className="mb-8">
-                <CalendarView />
               </div>
 
               {/* Keyboard shortcut hint */}
