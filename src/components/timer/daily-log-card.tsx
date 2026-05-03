@@ -1,7 +1,6 @@
 "use client";
 
 import { format, isSameDay } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
 

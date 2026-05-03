@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "@/store/useTimerStore";
-import { useTheme } from "next-themes";
+import { useTheme } from "@teispace/next-themes";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useTheme } from "@teispace/next-themes";
 import { Toaster } from "sonner";
 
 export function AppToaster() {

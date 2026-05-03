@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useAppStore, TimeEntry } from "@/store/useTimerStore";
-import { Play, Square, Pause, FolderOpen, History, Target, Clock, Settings, Calendar as CalendarIcon } from "lucide-react";
+import { useAppStore } from "@/store/useTimerStore";
+import { Play, Square, Pause, FolderOpen, History, Target } from "lucide-react";
 import { format, isSameDay, startOfDay, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatDuration } from "@/lib/utils";

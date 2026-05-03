@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { getTheme } from "@teispace/next-themes/server";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -18,11 +19,13 @@ export const metadata: Metadata = {
   description: "Rastreie seu tempo de foco e produtividade",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialTheme = await getTheme();
+
   return (
     <html
       lang="pt-BR"
@@ -35,6 +38,7 @@ export default function RootLayout({
           defaultTheme="dark"
           enableSystem={false}
           disableTransitionOnChange
+          initialTheme={initialTheme ?? undefined}
         >
           <TooltipProvider>
             <div className="flex h-screen overflow-hidden">
