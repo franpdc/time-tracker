@@ -32,6 +32,13 @@ export interface ActiveTimer {
   pausedAt?: number;
 }
 
+export interface AuditEntry {
+  id: string;
+  name: string;
+  hoursPerDay: number;
+  daysPerWeek: number;
+}
+
 interface AppState {
   // Folders & Projects
   folders: Folder[];
@@ -61,6 +68,12 @@ interface AppState {
   // Daily goal
   dailyGoalMinutes: number;
   setDailyGoal: (minutes: number) => void;
+
+  // Time Audit
+  auditEntries: AuditEntry[];
+  addAuditEntry: (name: string, hoursPerDay: number, daysPerWeek: number) => void;
+  updateAuditEntry: (id: string, updates: Partial<AuditEntry>) => void;
+  deleteAuditEntry: (id: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -197,6 +210,29 @@ export const useAppStore = create<AppState>()(
       dailyGoalMinutes: 240,
       setDailyGoal: (minutes) => {
         set({ dailyGoalMinutes: minutes });
+      },
+
+      // Time Audit
+      auditEntries: [],
+      addAuditEntry: (name, hoursPerDay, daysPerWeek) => {
+        set((state) => ({
+          auditEntries: [
+            ...state.auditEntries,
+            { id: crypto.randomUUID(), name, hoursPerDay, daysPerWeek },
+          ],
+        }));
+      },
+      updateAuditEntry: (id, updates) => {
+        set((state) => ({
+          auditEntries: state.auditEntries.map((e) =>
+            e.id === id ? { ...e, ...updates } : e
+          ),
+        }));
+      },
+      deleteAuditEntry: (id) => {
+        set((state) => ({
+          auditEntries: state.auditEntries.filter((e) => e.id !== id),
+        }));
       },
     }),
     {
