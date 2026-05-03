@@ -1,0 +1,181 @@
+
+> tmp-tracker@0.1.0 lint
+> eslint
+
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/overview/page.tsx
+  161:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/overview/page.tsx:161:5
+  159 |
+  160 |   React.useEffect(() => {
+> 161 |     setMounted(true);
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  162 |   }, []);
+  163 |
+  164 |   const getProjectColor = (id: string | null) => projects.find(p => p.id === id)?.color || "#555555";  react-hooks/set-state-in-effect
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/page.tsx
+  33:21  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/page.tsx:33:21
+  31 |   const [goalInput, setGoalInput] = useState("");
+  32 |
+> 33 |   useEffect(() => { setMounted(true); }, []);
+     |                     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  34 |
+  35 |   // Sync with active timer
+  36 |   useEffect(() => {                              react-hooks/set-state-in-effect
+  38:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/page.tsx:38:7
+  36 |   useEffect(() => {
+  37 |     if (activeTimer) {
+> 38 |       setTaskName(activeTimer.taskName);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  39 |       setProjectId(activeTimer.projectId);
+  40 |     }
+  41 |   }, [activeTimer]);                                  react-hooks/set-state-in-effect
+  73:11  error    Error: Cannot access variable before it is declared
+
+`handleStart` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/page.tsx:73:11
+  71 |           else pauseTimer();
+  72 |         } else {
+> 73 |           handleStart();
+     |           ^^^^^^^^^^^ `handleStart` accessed before it is declared
+  74 |         }
+  75 |       }
+  76 |     };
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/page.tsx:81:3
+  79 |   }, [activeTimer, taskName, projectId]);
+  80 |
+> 81 |   const handleStart = useCallback(() => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 82 |     startTimer(taskName.trim() || "Sem título", projectId);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 83 |   }, [startTimer, taskName, projectId]);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `handleStart` is declared here
+  84 |
+  85 |   const handleStop = useCallback(() => {
+  86 |     const entry = stopTimer();  react-hooks/immutability
+  79:6   warning  React Hook useEffect has missing dependencies: 'handleStart', 'pauseTimer', and 'resumeTimer'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+  81:35  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/page.tsx:81:35
+  79 |   }, [activeTimer, taskName, projectId]);
+  80 |
+> 81 |   const handleStart = useCallback(() => {
+     |                                   ^^^^^^^
+> 82 |     startTimer(taskName.trim() || "Sem título", projectId);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 83 |   }, [startTimer, taskName, projectId]);
+     | ^^^^ Could not preserve existing memoization
+  84 |
+  85 |   const handleStop = useCallback(() => {
+  86 |     const entry = stopTimer();                                                                                                                                                                                                                                                                          react-hooks/preserve-manual-memoization
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/projetos/page.tsx
+  19:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/app/projetos/page.tsx:19:5
+  17 |
+  18 |   useEffect(() => {
+> 19 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  20 |   }, []);
+  21 |
+  22 |   const [isAddingFolder, setIsAddingFolder] = useState(false);  react-hooks/set-state-in-effect
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/components/layout/title-manager.tsx
+   8:10  warning  'elapsed' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  24:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/components/layout/title-manager.tsx:24:5
+  22 |     // Initial calculation
+  23 |     const calcElapsed = () => Math.floor((Date.now() - activeTimer.startedAt) / 1000);
+> 24 |     setElapsed(calcElapsed());
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |
+  26 |     // Update every second
+  27 |     const interval = setInterval(() => {  react-hooks/set-state-in-effect
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/components/timer/active-timer.tsx
+   6:10  warning  'cn' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  42:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/components/timer/active-timer.tsx:42:7
+  40 |   useEffect(() => {
+  41 |     if (activeTimer) {
+> 42 |       setTaskName(activeTimer.taskName);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |       setProjectId(activeTimer.projectId);
+  44 |     }
+  45 |   }, [activeTimer]);  react-hooks/set-state-in-effect
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/components/timer/add-manual-entry-modal.tsx
+  45:11  error  'startedAt' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/components/timer/edit-entry-modal.tsx
+   8:10  warning  'formatDuration' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  42:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/francisco/Documents/Programação/Projetos/time tracker /src/components/timer/edit-entry-modal.tsx:42:7
+  40 |   useEffect(() => {
+  41 |     if (open) {
+> 42 |       setTaskName(entry.taskName);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |       setProjectId(entry.projectId);
+  44 |       setDate(format(new Date(entry.startedAt), "yyyy-MM-dd"));
+  45 |       setStartTime(format(new Date(entry.startedAt), "HH:mm"));  react-hooks/set-state-in-effect
+  59:11  error    'startedAt' is never reassigned. Use 'const' instead                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 prefer-const
+
+✖ 15 problems (11 errors, 4 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+

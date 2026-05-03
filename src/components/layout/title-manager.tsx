@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAppStore } from "@/store/useTimerStore";
 
 export function TitleManager() {
   const { activeTimer } = useAppStore();
-  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
     if (!activeTimer) {
@@ -20,14 +19,12 @@ export function TitleManager() {
     }
 
     // Initial calculation
-    const calcElapsed = () => Math.floor((Date.now() - activeTimer.startedAt) / 1000);
-    setElapsed(calcElapsed());
+    const getSeconds = () => Math.floor((Date.now() - activeTimer.startedAt) / 1000);
+    document.title = `${formatTitleTime(getSeconds())} - ${activeTimer.taskName || "Sem título"}`;
 
     // Update every second
     const interval = setInterval(() => {
-      const seconds = calcElapsed();
-      setElapsed(seconds);
-      document.title = `${formatTitleTime(seconds)} - ${activeTimer.taskName || "Sem título"}`;
+      document.title = `${formatTitleTime(getSeconds())} - ${activeTimer.taskName || "Sem título"}`;
     }, 1000);
 
     return () => clearInterval(interval);

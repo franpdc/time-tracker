@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format, subDays, addDays, startOfWeek, endOfWeek, isSameDay, isSameMonth, isWithinInterval, startOfMonth, endOfMonth, startOfDay, subMonths, addMonths, startOfYear, endOfYear, addYears, subYears, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, MoreHorizontal, Trash2, Download, Pencil, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MoreHorizontal, Trash2, Download, Pencil, Play } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
 import { formatDuration } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import React, { useEffect } from "react";
+import React from "react";
 import { AddManualEntryModal } from "@/components/timer/add-manual-entry-modal";
 import { EditEntryModal } from "@/components/timer/edit-entry-modal";
 import { toast } from "sonner";
@@ -32,9 +32,9 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
     return (
       <div className="w-[260px] p-2 text-foreground">
         <div className="flex items-center justify-between mb-4 px-2 pt-2">
-          <button onClick={() => setCalDate(subYears(calDate, 20))} className="p-1 hover:bg-accent rounded"><ChevronLeft className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(subYears(calDate, 20))} className="p-1 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50" aria-label="Anterior"><ChevronLeft className="w-4 h-4"/></button>
           <span className="text-sm font-medium capitalize">{startYearNum} - {startYearNum + 20}</span>
-          <button onClick={() => setCalDate(addYears(calDate, 20))} className="p-1 hover:bg-accent rounded"><ChevronRight className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(addYears(calDate, 20))} className="p-1 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50" aria-label="Próximo"><ChevronRight className="w-4 h-4"/></button>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {years.map(y => {
@@ -44,12 +44,12 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
                <button
                   key={y}
                   onClick={() => { setCurrentDate(new Date(y, 0, 1)); setOpen(false); }}
-                  className={`h-10 rounded-md flex flex-col items-center justify-center text-sm transition-colors
-                    ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent"}
+                  className={`h-10 rounded-lg flex flex-col items-center justify-center text-sm transition-all duration-200 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50
+                    ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent text-foreground"}
                   `}
                >
                  <span>{y}</span>
-                 {isActual && <span className="text-[9px] opacity-70">(atual)</span>}
+                 {isActual && <span className="text-2xs opacity-70">(atual)</span>}
                </button>
             )
           })}
@@ -66,9 +66,9 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
     return (
       <div className="w-[260px] p-2 text-foreground">
         <div className="flex items-center justify-between mb-4 px-2 pt-2">
-          <button onClick={() => setCalDate(subYears(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronLeft className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(subYears(calDate, 1))} className="p-1 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50" aria-label="Ano anterior"><ChevronLeft className="w-4 h-4"/></button>
           <span className="text-sm font-medium capitalize">{format(calDate, "yyyy")}</span>
-          <button onClick={() => setCalDate(addYears(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronRight className="w-4 h-4"/></button>
+          <button onClick={() => setCalDate(addYears(calDate, 1))} className="p-1 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50" aria-label="Próximo ano"><ChevronRight className="w-4 h-4"/></button>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {months.map(m => {
@@ -78,12 +78,12 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
                <button
                   key={m.toISOString()}
                   onClick={() => { setCurrentDate(m); setOpen(false); }}
-                  className={`h-12 rounded-md flex flex-col items-center justify-center text-xs transition-colors capitalize
-                    ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent"}
+                  className={`h-12 rounded-lg flex flex-col items-center justify-center text-xs transition-all duration-200 capitalize active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50
+                    ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent text-foreground"}
                   `}
                >
                  <span className="font-medium text-sm">{format(m, "MMM", { locale: ptBR })}</span>
-                 {isActual && <span className="text-[9px] opacity-70 mt-0.5">(atual)</span>}
+                 {isActual && <span className="text-2xs opacity-70 mt-0.5">(atual)</span>}
                </button>
             )
           })}
@@ -105,12 +105,12 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
   return (
     <div className="w-[260px] p-3 text-foreground">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => setCalDate(subMonths(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronLeft className="w-4 h-4"/></button>
+        <button onClick={() => setCalDate(subMonths(calDate, 1))} className="p-1 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50" aria-label="Mês anterior"><ChevronLeft className="w-4 h-4"/></button>
         <span className="text-sm font-medium capitalize">{format(calDate, "MMMM yyyy", { locale: ptBR })}</span>
-        <button onClick={() => setCalDate(addMonths(calDate, 1))} className="p-1 hover:bg-accent rounded"><ChevronRight className="w-4 h-4"/></button>
+        <button onClick={() => setCalDate(addMonths(calDate, 1))} className="p-1 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50" aria-label="Próximo mês"><ChevronRight className="w-4 h-4"/></button>
       </div>
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {['S','T','Q','Q','S','S','D'].map((d,i) => <div key={i} className="text-center text-[10px] text-muted-foreground">{d}</div>)}
+        {['S','T','Q','Q','S','S','D'].map((d,i) => <div key={i} className="text-center text-2xs text-muted-foreground/60 font-medium tracking-wider">{d}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-1">
         {days.map(d => {
@@ -122,8 +122,8 @@ function MiniCalendar({ currentDate, setCurrentDate, setOpen, viewMode }: { curr
              <button
                 key={d.toISOString()}
                 onClick={() => { setCurrentDate(d); setOpen(false); }}
-                className={`h-8 rounded-md flex items-center justify-center text-xs transition-colors
-                  ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent"}
+                className={`h-8 rounded-lg flex items-center justify-center text-xs transition-all duration-200 tabular-nums active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50
+                  ${isSelected ? "bg-cyan-glow text-background font-bold" : "hover:bg-accent text-foreground"}
                   ${!isCurrMonth && !isSelected ? "text-muted-foreground opacity-30" : ""}
                 `}
              >
@@ -142,12 +142,7 @@ interface BreakdownItem {
   value: number;
 }
 
-const formatLogDuration = (seconds: number) => {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h${String(m).padStart(2, '0')}`;
-  return `${m} min`;
-};
+
 
 export default function OverviewPage() {
   const { entries, projects, deleteEntry, startTimer } = useAppStore();
@@ -158,6 +153,7 @@ export default function OverviewPage() {
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -223,7 +219,27 @@ export default function OverviewPage() {
   const totalSeconds = filteredEntries.reduce((acc, curr) => acc + curr.duration, 0);
   const formatTotal = () => formatDuration(totalSeconds);
 
-  const sessionsCount = filteredEntries.length;
+  const groupedEntries = Array.from(
+    filteredEntries.reduce((acc, entry) => {
+      const key = `${entry.taskName.trim().toLowerCase()}-${entry.projectId || 'null'}`;
+      if (!acc.has(key)) {
+        acc.set(key, { ...entry, sessionsCount: 1 });
+      } else {
+        const existing = acc.get(key)!;
+        existing.duration += entry.duration;
+        existing.sessionsCount += 1;
+        if (entry.startedAt > existing.startedAt) {
+          existing.startedAt = entry.startedAt;
+          existing.endedAt = entry.endedAt;
+          existing.id = entry.id;
+        }
+      }
+      return acc;
+    }, new Map<string, typeof entries[0] & { sessionsCount: number }>())
+    .values()
+  ).sort((a, b) => b.duration - a.duration);
+
+  const uniqueTasksCount = groupedEntries.length;
 
   // Project distribution
   const projectDurations: Record<string, number> = {};
@@ -322,7 +338,7 @@ export default function OverviewPage() {
       {/* Top bar */}
       <header className="flex items-center justify-between px-8 py-5 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Overview</h1>
+          <h1 className="text-xl font-bold text-foreground tracking-[-0.02em]">Overview</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Acompanhe seu foco ao longo do tempo
           </p>
@@ -330,7 +346,7 @@ export default function OverviewPage() {
         <div className="flex items-center gap-4 text-xs text-muted-foreground min-h-[40px]">
           {mounted && (
             <>
-              <span>{format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
+              <span className="tabular-nums">{format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
               <AddManualEntryModal />
             </>
           )}
@@ -339,22 +355,30 @@ export default function OverviewPage() {
 
       <div className="flex-1 overflow-y-auto px-8 py-6">
         {!mounted ? (
-          <div className="flex items-center justify-center h-64">
-             <div className="animate-spin h-8 w-8 border-4 border-cyan-glow border-t-transparent rounded-full"></div>
+          <div className="space-y-4">
+            <div className="h-10 rounded-xl skeleton" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-28 rounded-2xl skeleton" />
+              <div className="h-28 rounded-2xl skeleton" />
+              <div className="h-28 rounded-2xl skeleton" />
+              <div className="h-28 rounded-2xl skeleton" />
+            </div>
+            <div className="h-64 rounded-2xl skeleton" />
+            <div className="h-64 rounded-2xl skeleton" />
           </div>
         ) : (
           <>
             {/* View mode tabs */}
         <div className="flex items-center gap-6 mb-6">
-          <div className="flex items-center gap-1 bg-card rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-card rounded-xl p-1 border border-border">
             {views.map((v) => (
               <button
                 key={v.key}
                 onClick={() => setViewMode(v.key)}
-                className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+                className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 ${
                   viewMode === v.key
-                    ? "bg-accent text-foreground"
-                    : "text-muted-foreground/60 hover:text-muted-foreground"
+                    ? "bg-accent text-foreground shadow-card"
+                    : "text-muted-foreground/70 hover:text-foreground hover:bg-surface-hover"
                 }`}
               >
                 {v.label}
@@ -366,108 +390,65 @@ export default function OverviewPage() {
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={goBack}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-muted-foreground hover:text-foreground transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card border border-border text-muted-foreground hover:text-foreground hover:border-cyan-glow/30 transition-all duration-200 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
+              aria-label="Período anterior"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
               <PopoverTrigger>
-                <div className="text-sm text-muted-foreground min-w-[150px] text-center font-medium capitalize flex items-center justify-center gap-2 hover:text-foreground transition-colors cursor-pointer">
+                <div className="text-sm text-muted-foreground min-w-[150px] text-center font-medium capitalize flex items-center justify-center gap-2 hover:text-foreground transition-colors duration-200 cursor-pointer tabular-nums">
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {dateLabel}
                 </div>
               </PopoverTrigger>
-              <PopoverContent align="center" className="w-auto p-0 bg-card border-border">
+              <PopoverContent align="center" className="w-auto p-0 bg-card border-border shadow-elevated">
                 <MiniCalendar currentDate={currentDate} setCurrentDate={setCurrentDate} setOpen={setIsCalendarOpen} viewMode={viewMode} />
               </PopoverContent>
             </Popover>
             <button
               onClick={goForward}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-muted-foreground hover:text-foreground transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card border border-border text-muted-foreground hover:text-foreground hover:border-cyan-glow/30 transition-all duration-200 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
+              aria-label="Próximo período"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Stats and Log row */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 mb-8">
-          {/* Stats cards grid — Total de foco is larger for visual hierarchy */}
-          <div className="xl:col-span-3 grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-cyan-glow/10 to-transparent rounded-2xl p-5 border border-cyan-glow/20 col-span-2 sm:col-span-1">
-              <p className="text-xs text-cyan-glow/70 mb-1 font-medium">Total de foco</p>
-              <p className="text-3xl font-bold text-cyan-glow tracking-tight">
-                {formatTotal()}
-              </p>
-              <p className="text-[11px] text-cyan-glow/50 mt-1">tempo {viewMode === "hoje" ? "hoje" : "no período"}</p>
-            </div>
-            <div className="bg-card rounded-2xl p-5 border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Sessões</p>
-              <p className="text-2xl font-bold text-foreground tracking-tight">{sessionsCount}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">sessões de foco</p>
-            </div>
-            <div className="bg-card rounded-2xl p-5 border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Área principal</p>
-              <p className="text-lg font-bold text-foreground tracking-tight truncate">{topProjectName}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">mais focado</p>
-            </div>
-            <div className="bg-card rounded-2xl p-5 border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Sequência</p>
-              <p className="text-2xl font-bold text-foreground tracking-tight">{streak} <span className="text-sm font-normal text-muted-foreground">dias</span></p>
-              <p className="text-[11px] text-green-live mt-1 flex items-center gap-1">
-                <span>↑ dias seguidos</span>
-              </p>
-            </div>
+        {/* Toggl-style Stats Row */}
+        <div className="flex w-full items-center justify-between bg-card rounded-2xl border border-border shadow-card p-6 mb-8">
+          <div className="flex flex-col gap-1 w-1/4">
+            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Total de Foco</span>
+            <span className="text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{formatTotal()}</span>
+            <span className="text-xs text-muted-foreground mt-1">tempo {viewMode === "hoje" ? "hoje" : "no período"}</span>
           </div>
-
-          {/* Log Card */}
-          <div className="xl:col-span-2 bg-card rounded-2xl p-5 border border-border flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-foreground">
-                {viewMode === "hoje" ? "Log Diário" : 
-                 viewMode === "esta-semana" ? "Log da Semana" :
-                 viewMode === "este-mes" ? "Log do Mês" : "Log do Ano"}
-              </h3>
-              
-              <span className="text-sm font-medium text-muted-foreground">
-                {viewMode === "hoje" ? format(currentDate, "dd/MM") : dateLabel}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {projectDataForDonut.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2 italic">Nenhuma atividade registrada hoje.</p>
-              ) : (
-                <>
-                  {projectDataForDonut.map((p, i) => (
-                    <div 
-                      key={i} 
-                      className="px-3 py-1.5 rounded-xl border flex items-center gap-2"
-                      style={{ 
-                        backgroundColor: `${p.color}10`, 
-                        borderColor: `${p.color}25` 
-                      }}
-                    >
-                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: p.color }}>
-                        {p.name}: {formatLogDuration(p.duration)}
-                      </span>
-                    </div>
-                  ))}
-                  <div className="px-3 py-1.5 rounded-xl bg-accent border border-border flex items-center">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                      Total: <span className="text-foreground">{formatLogDuration(totalSeconds)}</span>
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
+          <div className="w-px h-16 bg-border mx-6 shrink-0"></div>
+          <div className="flex flex-col gap-1 w-1/4">
+            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Tarefas Focadas</span>
+            <span className="text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{uniqueTasksCount}</span>
+            <span className="text-xs text-muted-foreground mt-1">tarefas únicas no período</span>
+          </div>
+          <div className="w-px h-16 bg-border mx-6 shrink-0"></div>
+          <div className="flex flex-col gap-1 w-1/4">
+            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Área Principal</span>
+            <span className="text-xl font-bold text-foreground tracking-[-0.02em] truncate">{topProjectName}</span>
+            <span className="text-xs text-muted-foreground mt-1">mais focado</span>
+          </div>
+          <div className="w-px h-16 bg-border mx-6 shrink-0"></div>
+          <div className="flex flex-col gap-1 w-1/4">
+            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Sequência</span>
+            <span className="text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{streak} <span className="text-sm font-normal text-muted-foreground/50">dias</span></span>
+            <p className="text-xs text-green-live/80 mt-1 flex items-center gap-1">
+              <span>↑ dias seguidos</span>
+            </p>
           </div>
         </div>
 
         {/* Charts row */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {/* Dynamic Bar Chart */}
-          <div className="col-span-2 bg-card rounded-2xl p-6 border border-border overflow-x-auto">
+          <div className="col-span-2 bg-card rounded-2xl p-6 border border-border shadow-card overflow-x-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">
@@ -479,7 +460,7 @@ export default function OverviewPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-cyan-glow"></span>
-                <span className="text-[11px] text-muted-foreground">Foco</span>
+                <span className="text-xs text-muted-foreground">Foco</span>
               </div>
             </div>
 
@@ -490,7 +471,7 @@ export default function OverviewPage() {
                 <div className="flex w-full h-full items-center justify-center gap-12">
                   <div className="flex flex-col items-center justify-end h-full w-32 group relative">
                     {/* Tooltip on hover */}
-                    <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-accent border border-border text-foreground text-[10px] p-2 rounded shadow-xl w-max min-w-[120px]">
+                    <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-popover border border-border text-foreground text-2xs p-2.5 rounded-lg shadow-elevated w-max min-w-[140px]">
                       <div className="font-semibold text-xs border-b border-border pb-1 mb-1 text-center">
                         Hoje
                       </div>
@@ -542,7 +523,7 @@ export default function OverviewPage() {
                     >
                       <div className="group relative w-full flex items-end justify-center">
                         {/* Tooltip on hover */}
-                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-accent border border-border text-foreground text-[10px] p-2 rounded shadow-xl w-max min-w-[120px]">
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-popover border border-border text-foreground text-2xs p-2.5 rounded-lg shadow-elevated w-max min-w-[140px]">
                           <div className="font-semibold text-xs border-b border-border pb-1 mb-1 text-center">
                             {d.label}
                           </div>
@@ -576,7 +557,7 @@ export default function OverviewPage() {
                           }}
                         />
                       </div>
-                      <span className="text-[10px] text-muted-foreground/50 shrink-0 truncate max-w-full capitalize">{d.label}</span>
+                      <span className="text-2xs text-muted-foreground/50 shrink-0 truncate max-w-full capitalize">{d.label}</span>
                     </div>
                   );
                 })
@@ -585,7 +566,7 @@ export default function OverviewPage() {
           </div>
 
           {/* Donut chart - Distribution by project */}
-          <div className="bg-card rounded-2xl p-6 border border-border">
+          <div className="bg-card rounded-2xl p-6 border border-border shadow-card">
             <h3 className="text-sm font-semibold text-foreground mb-1">
               Distribuição por projeto
             </h3>
@@ -639,7 +620,7 @@ export default function OverviewPage() {
                   <span className="text-2xl font-bold text-foreground">
                     {formatTotal()}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Total</span>
+                  <span className="text-2xs text-muted-foreground">Total</span>
                 </div>
               </div>
             </div>
@@ -704,19 +685,19 @@ export default function OverviewPage() {
           });
 
           return (
-            <div className="bg-card rounded-2xl p-6 border border-border mb-8">
+            <div className="bg-card rounded-2xl p-6 border border-border shadow-card mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Mapa de contribuições</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">Consistência ao longo do ano</p>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-2xs text-muted-foreground/70 font-medium">
                   <span>Menos</span>
-                  <span className="w-3 h-3 rounded-sm bg-muted border border-border" />
-                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/20" />
-                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/40" />
-                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/60" />
-                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/90" />
+                  <span className="w-[10px] h-[10px] rounded-[2px] bg-muted border border-border" />
+                  <span className="w-[10px] h-[10px] rounded-[2px] bg-cyan-glow/20" />
+                  <span className="w-[10px] h-[10px] rounded-[2px] bg-cyan-glow/40" />
+                  <span className="w-[10px] h-[10px] rounded-[2px] bg-cyan-glow/60" />
+                  <span className="w-[10px] h-[10px] rounded-[2px] bg-cyan-glow/90" />
                   <span>Mais</span>
                 </div>
               </div>
@@ -730,9 +711,9 @@ export default function OverviewPage() {
                       return (
                         <div
                           key={key}
-                          className={`w-[14px] h-[14px] rounded-sm ${getIntensity(secs)} transition-colors cursor-default group/cell relative`}
+                          className={`w-[14px] h-[14px] rounded-[3px] ${getIntensity(secs)} transition-all duration-150 ease-out cursor-default group/cell relative hover:scale-[1.4] hover:z-10 hover:ring-2 hover:ring-cyan-glow/40 hover:ring-offset-1 hover:ring-offset-card`}
                         >
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/cell:flex bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded shadow-lg border border-border whitespace-nowrap z-50 font-medium">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/cell:flex bg-popover text-popover-foreground text-2xs px-2.5 py-1.5 rounded-lg shadow-elevated border border-border whitespace-nowrap z-50 font-medium tabular-nums">
                             {label}
                           </div>
                         </div>
@@ -746,7 +727,7 @@ export default function OverviewPage() {
         })()}
 
         {/* Focus log table */}
-        <div className="bg-card rounded-2xl p-6 border border-border">
+        <div className="bg-card rounded-2xl p-6 border border-border shadow-card">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-sm font-semibold text-foreground">
@@ -776,7 +757,7 @@ export default function OverviewPage() {
                 URL.revokeObjectURL(url);
                 toast.success(`${filteredEntries.length} sessões exportadas`);
               }}
-              className="flex items-center gap-1.5 text-xs font-medium text-cyan-glow hover:text-cyan-glow/80 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-cyan-glow hover:text-cyan-glow/80 transition-colors duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 rounded-md px-2 py-1 -mx-2 -my-1"
             >
               <Download className="h-3.5 w-3.5" />
               Exportar CSV
@@ -786,33 +767,41 @@ export default function OverviewPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
-                  Data/Hora
+                <th className="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
+                  Último Foco
                 </th>
-                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
+                <th className="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
                   Projeto
                 </th>
-                <th className="text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
+                <th className="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
                   Tarefa
                 </th>
-                <th className="text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
+                <th className="text-right text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
                   Duração
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A2A2A]/50">
+            <tbody className="divide-y divide-border/50">
               {filteredEntries.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
-                    Nenhuma sessão de foco neste período.
+                  <td colSpan={4} className="py-12 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover">
+                        <CalendarIcon className="h-5 w-5 text-muted-foreground/50" strokeWidth={1.6} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Nenhuma sessão neste período</p>
+                        <p className="text-xs text-muted-foreground/60 mt-0.5">Tente outro intervalo ou comece um foco agora.</p>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ) : (
-                filteredEntries.map((entry) => {
+                groupedEntries.map((entry) => {
                   const dFormat = formatDuration(entry.duration);
 
                   return (
-                    <tr key={entry.id} className="group hover:bg-[#1E1E1E] transition-colors">
+                    <tr key={entry.id} className="group hover:bg-surface-hover transition-colors duration-150">
                       <td className="py-3 pl-2">
                         <div className="flex items-center gap-2">
                           <button
@@ -820,8 +809,9 @@ export default function OverviewPage() {
                               startTimer(entry.taskName, entry.projectId);
                               toast("Timer iniciado", { description: entry.taskName });
                             }}
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-transparent text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all opacity-0 group-hover:opacity-100"
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-transparent text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all duration-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-accent/40"
                             title="Continuar"
+                            aria-label="Continuar"
                           >
                             <Play className="h-3 w-3 ml-0.5" fill="currentColor" />
                           </button>
@@ -837,19 +827,24 @@ export default function OverviewPage() {
                         </div>
                       </td>
                       <td className="py-3 text-sm text-muted-foreground max-w-[200px] truncate">
-                        {entry.taskName}
+                        <div className="flex items-center gap-2">
+                          <span>{entry.taskName}</span>
+                          {entry.sessionsCount > 1 && (
+                            <span className="inline-flex items-center justify-center rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                              {entry.sessionsCount} sessões
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 text-sm text-foreground text-right font-medium pr-2 tabular-nums">
                         <div className="flex items-center justify-end gap-3">
                           <span>{dFormat}</span>
                           <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent hover:text-foreground transition-all cursor-pointer" />
-                              }
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </DropdownMenuTrigger>
+                            <DropdownMenuTrigger render={
+                              <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent hover:text-foreground transition-all duration-300 ease-out cursor-pointer focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/40" aria-label="Mais ações">
+                                <MoreHorizontal className="h-4 w-4" strokeWidth={1.5} />
+                              </button>
+                            } />
                             <DropdownMenuContent align="end" className="w-32 bg-card border-border">
                               <DropdownMenuItem
                                 onClick={() => setEditingEntry(entry)}

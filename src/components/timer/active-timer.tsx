@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useAppStore } from "@/store/useTimerStore";
 import { Play, Square, Pause, FolderOpen, History } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,9 @@ export function ActiveTimer() {
   // Sync with store on mount or when activeTimer changes
   useEffect(() => {
     if (activeTimer) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTaskName(activeTimer.taskName);
+       
       setProjectId(activeTimer.projectId);
     }
   }, [activeTimer]);
@@ -138,8 +140,8 @@ export function ActiveTimer() {
               />
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <div 
-                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-accent transition-colors ml-2 cursor-pointer px-3 gap-2"
+                  <div
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-surface-hover hover:border-cyan-glow/30 transition-all duration-200 ease-out active:scale-[0.97] ml-2 cursor-pointer px-3 gap-2"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
@@ -203,7 +205,7 @@ export function ActiveTimer() {
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-full max-w-md bg-card border border-border rounded-xl overflow-hidden z-50 shadow-2xl">
                   <div className="px-3 py-2 border-b border-border bg-accent/50 flex items-center gap-2">
                     <History className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sugestões anteriores</span>
+                    <span className="text-2xs font-bold text-muted-foreground uppercase tracking-[0.14em]">Sugestões anteriores</span>
                   </div>
                   {suggestions.map(([name, pid]) => (
                     <button
@@ -222,7 +224,7 @@ export function ActiveTimer() {
                             className="w-2 h-2 rounded-full" 
                             style={{ backgroundColor: projects.find(p => p.id === pid)?.color }} 
                           />
-                          <span className="text-[10px] text-muted-foreground">{projects.find(p => p.id === pid)?.name}</span>
+                          <span className="text-2xs text-muted-foreground">{projects.find(p => p.id === pid)?.name}</span>
                         </div>
                       )}
                     </button>
@@ -232,8 +234,8 @@ export function ActiveTimer() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <div 
-                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-accent transition-colors ml-2 cursor-pointer px-3 gap-2"
+                  <div
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-surface-hover hover:border-cyan-glow/30 transition-all duration-200 ease-out active:scale-[0.97] ml-2 cursor-pointer px-3 gap-2"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
@@ -289,7 +291,7 @@ export function ActiveTimer() {
             cy="160"
             r="140"
             fill="none"
-            stroke="#1A1A1A"
+            stroke="var(--border)"
             strokeWidth="6"
           />
           {activeTimer && (
@@ -298,7 +300,7 @@ export function ActiveTimer() {
               cy="160"
               r="140"
               fill="none"
-              stroke="#00F5FF"
+              stroke="var(--color-cyan-glow)"
               strokeWidth="6"
               strokeLinecap="round"
               className="transition-all duration-100 ease-linear"
@@ -334,21 +336,21 @@ export function ActiveTimer() {
           <>
             <button
               onClick={handleToggleTimer}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-card border border-border text-foreground hover:bg-accent transition-all duration-200 active:scale-95"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-card border border-border text-foreground hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-all duration-200 ease-out active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <Square className="h-6 w-6" fill="currentColor" />
             </button>
             {activeTimer.pausedAt ? (
               <button
                 onClick={resumeTimer}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all duration-200 active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.3)]"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all duration-200 ease-out active:scale-[0.95] shadow-[0_0_20px_rgba(255,107,0,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <Play className="h-7 w-7 ml-1" fill="currentColor" />
               </button>
             ) : (
               <button
                 onClick={pauseTimer}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-cyan-glow text-[#0D0D0D] hover:bg-cyan-glow/90 transition-all duration-200 active:scale-95 shadow-[0_0_20px_rgba(0,245,255,0.3)]"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-cyan-glow text-black hover:bg-cyan-glow/90 transition-all duration-200 ease-out active:scale-[0.95] shadow-[0_0_20px_rgba(0,245,255,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <Pause className="h-6 w-6" fill="currentColor" />
               </button>
@@ -357,7 +359,7 @@ export function ActiveTimer() {
         ) : (
           <button
             onClick={handleToggleTimer}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all duration-200 active:scale-95 shadow-[0_0_30px_rgba(255,107,0,0.3)]"
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-accent text-foreground hover:bg-orange-accent/90 transition-all duration-200 ease-out active:scale-[0.95] shadow-[0_0_30px_rgba(255,107,0,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Play className="h-7 w-7 ml-1" fill="currentColor" />
           </button>

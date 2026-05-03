@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format, parse } from "date-fns";
-import { FolderOpen, Plus } from "lucide-react";
+import { FolderOpen, Plus, History } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
 import { toast } from "sonner";
 import { formatDuration } from "@/lib/utils";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AddManualEntryModal() {
-  const { projects, addEntry } = useAppStore();
+  const { projects, addEntry, entries } = useAppStore();
   const [open, setOpen] = useState(false);
   
   const [taskName, setTaskName] = useState("");
@@ -34,6 +34,16 @@ export function AddManualEntryModal() {
 
   const selectedProject = projects.find((p) => p.id === projectId);
 
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const recentTasksMap = new Map<string, string | null>();
+  entries.forEach(e => {
+    if (e.taskName && !recentTasksMap.has(e.taskName)) {
+      recentTasksMap.set(e.taskName, e.projectId);
+    }
+  });
+  const suggestions = Array.from(recentTasksMap.entries())
+    .filter(([name]) => name.toLowerCase().includes(taskName.toLowerCase()))
+    .slice(0, 5);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -42,7 +52,7 @@ export function AddManualEntryModal() {
       const startDateTime = parse(`${date} ${startTime}`, "yyyy-MM-dd HH:mm", new Date());
       const endDateTime = parse(`${date} ${endTime}`, "yyyy-MM-dd HH:mm", new Date());
 
-      let startedAt = startDateTime.getTime();
+      const startedAt = startDateTime.getTime();
       let endedAt = endDateTime.getTime();
 
       // Handle cases where end time is the next day (e.g. 23:00 to 01:00)
@@ -75,15 +85,13 @@ export function AddManualEntryModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-[#333333] text-xs font-medium text-foreground transition-colors cursor-pointer" />
-        }
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Adicionar tempo
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
+      <DialogTrigger render={
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-surface-hover text-xs font-medium text-foreground transition-all duration-300 ease-out active:scale-[0.96] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+          <Plus className="h-3.5 w-3.5" strokeWidth={1.5} />
+          Adicionar tempo
+        </button>
+      } />
+      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated">
         <DialogHeader>
           <DialogTitle>Adicionar Foco Manual</DialogTitle>
         </DialogHeader>
@@ -91,19 +99,53 @@ export function AddManualEntryModal() {
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <label className="text-xs text-muted-foreground font-medium">O que você fez?</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Ex: Leitura, Estudo..."
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-                required
-                className="flex-1 h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors"
-              />
+            <div className="flex items-center gap-2 relative">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Ex: Leitura, Estudo..."
+                  value={taskName}
+                  onChange={(e) => { setTaskName(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  required
+                  className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200"
+                />
+                
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl overflow-hidden z-50 shadow-elevated">
+                    <div className="px-3 py-2 border-b border-border flex items-center gap-2 bg-surface-hover">
+                      <History className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.5} />
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Recentes</span>
+                    </div>
+                    {suggestions.map(([name, pid]) => (
+                      <button
+                        key={name}
+                        onClick={(e) => { 
+                          e.preventDefault();
+                          setTaskName(name); 
+                          setProjectId(pid); 
+                          setShowSuggestions(false); 
+                        }}
+                        className="w-full px-3 py-2.5 text-left hover:bg-surface-hover transition-colors duration-150 flex items-center justify-between"
+                      >
+                        <span className="text-sm text-foreground">{name}</span>
+                        {pid && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: projects.find(p => p.id === pid)?.color }} />
+                            <span className="text-[10px] font-medium text-muted-foreground">{projects.find(p => p.id === pid)?.name}</span>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div
-                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-accent transition-colors cursor-pointer px-3 gap-2"
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-surface-hover hover:border-cyan-glow/30 transition-all duration-200 ease-out active:scale-[0.97] cursor-pointer px-3 gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
@@ -151,7 +193,7 @@ export function AddManualEntryModal() {
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
+              className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
             />
           </div>
 
@@ -163,7 +205,7 @@ export function AddManualEntryModal() {
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
+                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
               />
             </div>
             <div className="space-y-2">
@@ -173,25 +215,23 @@ export function AddManualEntryModal() {
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
+                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
               />
             </div>
           </div>
 
           <div className="pt-4 flex justify-end gap-2">
-            <DialogClose
-              render={
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                />
-              }
-            >
-              Cancelar
-            </DialogClose>
+            <DialogClose render={
+              <button
+                type="button"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-all duration-300 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
+              >
+                Cancelar
+              </button>
+            } />
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-cyan-glow text-black text-sm font-bold hover:bg-cyan-glow/90 transition-colors"
+              className="px-4 py-2 rounded-xl bg-cyan-glow text-black text-sm font-bold hover:bg-cyan-glow/90 transition-all duration-200 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-[0_0_16px_rgba(0,245,255,0.2)]"
             >
               Adicionar
             </button>

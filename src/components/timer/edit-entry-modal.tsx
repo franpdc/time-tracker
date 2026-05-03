@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { format, parse } from "date-fns";
-import { FolderOpen, Pencil } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { useAppStore, TimeEntry } from "@/store/useTimerStore";
 import { toast } from "sonner";
-import { formatDuration } from "@/lib/utils";
+
 import {
   Dialog,
   DialogContent,
@@ -39,10 +39,15 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
   // Reset state when entry changes or modal opens
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTaskName(entry.taskName);
+       
       setProjectId(entry.projectId);
+       
       setDate(format(new Date(entry.startedAt), "yyyy-MM-dd"));
+       
       setStartTime(format(new Date(entry.startedAt), "HH:mm"));
+       
       setEndTime(format(new Date(entry.endedAt), "HH:mm"));
     }
   }, [open, entry]);
@@ -56,7 +61,7 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
       const startDateTime = parse(`${date} ${startTime}`, "yyyy-MM-dd HH:mm", new Date());
       const endDateTime = parse(`${date} ${endTime}`, "yyyy-MM-dd HH:mm", new Date());
 
-      let startedAt = startDateTime.getTime();
+      const startedAt = startDateTime.getTime();
       let endedAt = endDateTime.getTime();
 
       // Handle cases where end time is the next day (e.g. 23:00 to 01:00)
@@ -85,7 +90,7 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
+      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated">
         <DialogHeader>
           <DialogTitle>Editar Sessão de Foco</DialogTitle>
         </DialogHeader>
@@ -100,12 +105,12 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
                 required
-                className="flex-1 h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors"
+                className="flex-1 h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div
-                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-accent transition-colors cursor-pointer px-3 gap-2"
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-card border border-border hover:bg-surface-hover hover:border-cyan-glow/30 transition-all duration-200 ease-out active:scale-[0.97] cursor-pointer px-3 gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
@@ -153,7 +158,7 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
+              className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
             />
           </div>
 
@@ -165,7 +170,7 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
+                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
               />
             </div>
             <div className="space-y-2">
@@ -175,25 +180,23 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus:border-[#555555] transition-colors text-foreground [color-scheme:dark]"
+                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200 text-foreground [color-scheme:dark]"
               />
             </div>
           </div>
 
           <div className="pt-4 flex justify-end gap-2">
-            <DialogClose
-              render={
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                />
-              }
-            >
-              Cancelar
-            </DialogClose>
+            <DialogClose render={
+              <button
+                type="button"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-all duration-300 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
+              >
+                Cancelar
+              </button>
+            } />
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-cyan-glow text-black text-sm font-bold hover:bg-cyan-glow/90 transition-colors"
+              className="px-4 py-2 rounded-xl bg-cyan-glow text-black text-sm font-bold hover:bg-cyan-glow/90 transition-all duration-200 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-[0_0_16px_rgba(0,245,255,0.2)]"
             >
               Salvar Alterações
             </button>

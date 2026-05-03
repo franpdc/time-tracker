@@ -13,10 +13,20 @@ export function AppToaster() {
       position="bottom-right"
       closeButton
       toastOptions={{
+        classNames: {
+          toast:
+            "rounded-2xl border-border bg-card text-foreground shadow-elevated backdrop-blur-xl",
+          title: "text-sm font-medium tracking-[-0.01em]",
+          description: "text-xs text-muted-foreground",
+          actionButton: "rounded-lg bg-cyan-glow text-black",
+          cancelButton: "rounded-lg",
+          success: "border-cyan-glow/30",
+          error: "border-destructive/40",
+        },
         style: {
-          background: isDark ? '#1A1A1A' : '#FFFFFF',
-          border: `1px solid ${isDark ? '#2A2A2A' : '#E4E4E7'}`,
-          color: isDark ? '#fff' : '#1A1A1A',
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          color: "var(--foreground)",
         },
       }}
     />
