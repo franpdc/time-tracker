@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, ChevronDown, ChevronRight, FolderOpen, MoreHorizontal, X, Check, Trash2 } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
+import { formatDuration } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function ProjetosPage() {
-  const { folders, projects, entries, addFolder, addProject, toggleFolder, deleteFolder, deleteProject, deleteEntry } = useAppStore();
+  const { folders, projects, entries, addFolder, addProject, toggleFolder, deleteFolder, deleteProject, updateFolder, updateProject, deleteEntry } = useAppStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // State for adding folder
   const [isAddingFolder, setIsAddingFolder] = useState(false);
@@ -23,6 +29,19 @@ export default function ProjetosPage() {
   const [newProjectColor, setNewProjectColor] = useState("#00F5FF");
 
   const colors = ["#00F5FF", "#FF6B00", "#00E676", "#A855F7", "#F43F5E", "#EAB308", "#3B82F6"];
+
+  const ColorPickerMenu = ({ currentColor, onSelect }: { currentColor: string, onSelect: (color: string) => void }) => (
+    <div className="flex flex-wrap gap-1.5 p-2 w-32">
+      {colors.map(c => (
+        <button
+          key={c}
+          onClick={() => onSelect(c)}
+          className={`w-5 h-5 rounded-full transition-transform hover:scale-110 ${currentColor === c ? 'ring-2 ring-white ring-offset-1 ring-offset-[#1A1A1A]' : ''}`}
+          style={{ backgroundColor: c }}
+        />
+      ))}
+    </div>
+  );
 
   const handleAddFolder = () => {
     if (newFolderName.trim()) {
@@ -46,9 +65,7 @@ export default function ProjetosPage() {
     const totalSecs = entries
       .filter((e) => e.projectId === projectId)
       .reduce((acc, curr) => acc + curr.duration, 0);
-    const h = Math.floor(totalSecs / 3600);
-    const m = Math.floor((totalSecs % 3600) / 60);
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    return formatDuration(totalSecs);
   };
 
   const rootProjects = projects.filter((p) => !p.folderId);
@@ -85,7 +102,12 @@ export default function ProjetosPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto px-8 py-6">
-        <div className="max-w-3xl space-y-4">
+        {!mounted ? (
+          <div className="flex items-center justify-center h-64">
+             <div className="animate-spin h-8 w-8 border-4 border-cyan-glow border-t-transparent rounded-full"></div>
+          </div>
+        ) : (
+          <div className="max-w-3xl space-y-4">
           
           {/* Add Root Project Inline Input */}
           {addingProjectToFolderId === "root" && (
@@ -152,15 +174,17 @@ export default function ProjetosPage() {
                           <MoreHorizontal className="h-4 w-4" />
                         </div>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-32 bg-[#1A1A1A] border-[#2A2A2A]">
+                      <DropdownMenuContent align="end" className="w-44 bg-[#1A1A1A] border-[#2A2A2A]">
+                        <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mudar cor</div>
+                        <ColorPickerMenu currentColor={project.color} onSelect={(color) => updateProject(project.id, { color })} />
+                        <div className="h-px bg-[#2A2A2A] my-1" />
                         <DropdownMenuItem
                           onClick={() => deleteProject(project.id)}
                           className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer flex items-center gap-2"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> Excluir
                         </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      </DropdownMenuContent>                    </DropdownMenu>
                   </div>
                 </div>
               ))}
@@ -221,7 +245,7 @@ export default function ProjetosPage() {
                     ) : (
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <FolderOpen className="h-5 w-5 text-orange-accent" />
+                    <FolderOpen className="h-5 w-5" style={{ color: folder.color }} />
                     <span className="text-sm font-semibold text-white">
                       {folder.name}
                     </span>
@@ -235,7 +259,10 @@ export default function ProjetosPage() {
                         <MoreHorizontal className="h-4 w-4" />
                       </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-32 bg-[#1A1A1A] border-[#2A2A2A]">
+                    <DropdownMenuContent align="end" className="w-44 bg-[#1A1A1A] border-[#2A2A2A]">
+                      <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mudar cor</div>
+                      <ColorPickerMenu currentColor={folder.color} onSelect={(color) => updateFolder(folder.id, { color })} />
+                      <div className="h-px bg-[#2A2A2A] my-1" />
                       <DropdownMenuItem
                         onClick={() => deleteFolder(folder.id)}
                         className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer flex items-center gap-2"
@@ -282,15 +309,17 @@ export default function ProjetosPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </div>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-32 bg-[#1A1A1A] border-[#2A2A2A]">
+                            <DropdownMenuContent align="end" className="w-44 bg-[#1A1A1A] border-[#2A2A2A]">
+                              <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mudar cor</div>
+                              <ColorPickerMenu currentColor={project.color} onSelect={(color) => updateProject(project.id, { color })} />
+                              <div className="h-px bg-[#2A2A2A] my-1" />
                               <DropdownMenuItem
                                 onClick={() => deleteProject(project.id)}
                                 className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer flex items-center gap-2"
                               >
                                 <Trash2 className="h-3.5 w-3.5" /> Excluir
                               </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            </DropdownMenuContent>                          </DropdownMenu>
                         </div>
                       </div>
                     ))}
@@ -348,66 +377,64 @@ export default function ProjetosPage() {
           })}
 
           {/* Unassigned Tasks List */}
-          {entries.filter(e => !e.projectId).length > 0 && (
-            <div className="bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden mt-8">
-              <div className="flex w-full items-center justify-between px-6 py-4 bg-[#1E1E1E]">
-                <div className="flex items-center gap-3">
-                  <div className="h-5 w-5 flex items-center justify-center">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#555555]"></span>
+          {(() => {
+            const unassignedEntries = entries.filter(e => !e.projectId);
+            if (unassignedEntries.length === 0) return null;
+
+            // Group by task name
+            const grouped = unassignedEntries.reduce((acc, curr) => {
+              const name = curr.taskName || "Sem título";
+              acc[name] = (acc[name] || 0) + curr.duration;
+              return acc;
+            }, {} as Record<string, number>);
+
+            const groupedList = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+
+            return (
+              <div className="bg-[#1A1A1A] rounded-2xl border border-[#2A2A2A] overflow-hidden mt-8">
+                <div className="flex w-full items-center justify-between px-6 py-4 bg-[#1E1E1E]">
+                  <div className="flex items-center gap-3">
+                    <div className="h-5 w-5 flex items-center justify-center">
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#555555]"></span>
+                    </div>
+                    <span className="text-sm font-semibold text-white">
+                      Sem projeto
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {groupedList.length} grupos de tarefas
+                    </span>
                   </div>
-                  <span className="text-sm font-semibold text-white">
-                    Sem projeto
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {entries.filter(e => !e.projectId).length} tarefas
-                  </span>
+                </div>
+                <div className="border-t border-[#2A2A2A]/50">
+                  {groupedList.map(([name, duration], idx) => {
+                    const formattedTime = formatDuration(duration);
+                    
+                    return (
+                      <div
+                        key={name}
+                        className={`flex items-center justify-between px-6 py-3.5 hover:bg-[#1E1E1E] transition-colors group ${
+                          idx < groupedList.length - 1 ? "border-b border-[#2A2A2A]/30" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 pl-7">
+                          <span className="text-sm text-muted-foreground font-medium truncate max-w-[200px]">
+                            {name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm text-muted-foreground font-medium tabular-nums">
+                            {formattedTime}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="border-t border-[#2A2A2A]/50">
-                {entries.filter(e => !e.projectId).map((entry, idx, arr) => {
-                  const h = Math.floor(entry.duration / 3600);
-                  const m = Math.floor((entry.duration % 3600) / 60);
-                  const formattedTime = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-                  
-                  return (
-                    <div
-                      key={entry.id}
-                      className={`flex items-center justify-between px-6 py-3.5 hover:bg-[#1E1E1E] transition-colors cursor-pointer group ${
-                        idx < arr.length - 1 ? "border-b border-[#2A2A2A]/30" : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 pl-7">
-                        <span className="text-sm text-muted-foreground font-medium truncate max-w-[200px]">
-                          {entry.taskName || "Tarefa sem nome"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm text-muted-foreground font-medium tabular-nums">
-                          {formattedTime}
-                        </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger>
-                            <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-[#2A2A2A] hover:text-white transition-all cursor-pointer">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </div>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-32 bg-[#1A1A1A] border-[#2A2A2A]">
-                            <DropdownMenuItem
-                              onClick={() => deleteEntry(entry.id)}
-                              className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer flex items-center gap-2"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" /> Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
+        )}
       </div>
     </div>
   );

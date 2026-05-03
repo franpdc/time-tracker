@@ -5,6 +5,7 @@ export interface Folder {
   id: string;
   name: string;
   isOpen: boolean;
+  color: string;
 }
 
 export interface Project {
@@ -35,9 +36,11 @@ interface AppState {
   // Folders & Projects
   folders: Folder[];
   projects: Project[];
-  addFolder: (name: string) => void;
+  addFolder: (name: string, color?: string) => void;
+  updateFolder: (id: string, updates: Partial<Folder>) => void;
   deleteFolder: (id: string) => void;
   addProject: (name: string, color: string, folderId: string | null) => void;
+  updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   toggleFolder: (id: string) => void;
 
@@ -52,6 +55,7 @@ interface AppState {
   // History
   entries: TimeEntry[];
   addEntry: (entry: TimeEntry) => void;
+  updateEntry: (id: string, updates: Partial<TimeEntry>) => void;
   deleteEntry: (id: string) => void;
 }
 
@@ -60,27 +64,47 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       folders: [],
       projects: [],
-      addFolder: (name) => {
+      addFolder: (name, color = "#FF6B00") => {
         set((state) => ({
-          folders: [...state.folders, { id: crypto.randomUUID(), name, isOpen: true }],
+          folders: [...state.folders, { id: crypto.randomUUID(), name, isOpen: true, color }],
+        }));
+      },
+      updateFolder: (id, updates) => {
+        set((state) => ({
+          folders: state.folders.map((f) => (f.id === id ? { ...f, ...updates } : f)),
         }));
       },
       deleteFolder: (id) => {
-        set((state) => ({
-          folders: state.folders.filter((f) => f.id !== id),
-          // Also set folderId to null for all projects in this folder
-          projects: state.projects.map((p) => (p.folderId === id ? { ...p, folderId: null } : p)),
-        }));
+        set((state) => {
+          const folderProjects = state.projects.filter((p) => p.id === id);
+          const folderProjectIds = folderProjects.map((p) => p.id);
+          
+          return {
+            folders: state.folders.filter((f) => f.id !== id),
+            // Also set folderId to null for all projects in this folder
+            projects: state.projects.map((p) => (p.folderId === id ? { ...p, folderId: null } : p)),
+            // If active timer is in this folder (via project), it stays but project remains
+            // No, if folder is deleted, projects are moved to root, so we don't need to clear activeTimer project
+          };
+        });
       },
       addProject: (name, color, folderId) => {
         set((state) => ({
           projects: [...state.projects, { id: crypto.randomUUID(), name, color, folderId }],
         }));
       },
+      updateProject: (id, updates) => {
+        set((state) => ({
+          projects: state.projects.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+        }));
+      },
       deleteProject: (id) => {
         set((state) => ({
           projects: state.projects.filter((p) => p.id !== id),
           entries: state.entries.map((e) => (e.projectId === id ? { ...e, projectId: null } : e)),
+          activeTimer: state.activeTimer?.projectId === id 
+            ? { ...state.activeTimer, projectId: null } 
+            : state.activeTimer,
         }));
       },
       toggleFolder: (id) => {
@@ -155,6 +179,11 @@ export const useAppStore = create<AppState>()(
       entries: [],
       addEntry: (entry) => {
         set((state) => ({ entries: [...state.entries, entry] }));
+      },
+      updateEntry: (id, updates) => {
+        set((state) => ({
+          entries: state.entries.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+        }));
       },
       deleteEntry: (id) => {
         set((state) => ({

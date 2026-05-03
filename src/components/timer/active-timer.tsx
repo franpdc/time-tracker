@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useAppStore } from "@/store/useTimerStore";
-import { Play, Square, Pause, FolderOpen } from "lucide-react";
+import { Play, Square, Pause, FolderOpen, History } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,16 +13,42 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function ActiveTimer() {
-  const { activeTimer, startTimer, stopTimer, updateTimer, pauseTimer, resumeTimer, projects } = useAppStore();
-  const [taskName, setTaskName] = useState(activeTimer?.taskName || "");
-  const [projectId, setProjectId] = useState<string | null>(activeTimer?.projectId || null);
+  const { activeTimer, startTimer, stopTimer, updateTimer, pauseTimer, resumeTimer, projects, entries } = useAppStore();
+  const [taskName, setTaskName] = useState("");
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Suggestions logic
+  const suggestions = useMemo(() => {
+    if (!taskName.trim() || activeTimer) return [];
+    
+    // Get unique tasks from history with their project
+    const uniqueTasks = new Map<string, string | null>();
+    entries.forEach(e => {
+      if (!uniqueTasks.has(e.taskName)) {
+        uniqueTasks.set(e.taskName, e.projectId);
+      }
+    });
+
+    return Array.from(uniqueTasks.entries())
+      .filter(([name]) => name.toLowerCase().includes(taskName.toLowerCase()))
+      .slice(0, 5);
+  }, [entries, taskName, activeTimer]);
+
+  // Sync with store on mount or when activeTimer changes
+  useEffect(() => {
+    if (activeTimer) {
+      setTaskName(activeTimer.taskName);
+      setProjectId(activeTimer.projectId);
+    }
+  }, [activeTimer]);
 
   useEffect(() => {
     if (activeTimer) {
       const update = () => {
         const endedAt = activeTimer.pausedAt || Date.now();
-        setElapsed(Math.floor((endedAt - activeTimer.startedAt) / 1000));
+        setElapsed(Math.max(0, Math.floor((endedAt - activeTimer.startedAt) / 1000)));
       };
 
       // Update immediately but asynchronously to avoid cascading render warning
@@ -62,7 +89,7 @@ export function ActiveTimer() {
   const handleProjectSelect = (id: string | null) => {
     setProjectId(id);
     if (activeTimer) {
-      updateTimer(activeTimer.taskName, id);
+      updateTimer(taskName, id);
     }
   };
 
@@ -71,14 +98,14 @@ export function ActiveTimer() {
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
 
+    const hh = String(h).padStart(2, "0");
     const mm = String(m).padStart(2, "0");
     const ss = String(s).padStart(2, "0");
 
     if (h > 0) {
-      const hh = String(h).padStart(2, "0");
-      return { h: hh, m: mm, s: ss, isHour: true };
+      return { display: `${hh}:${mm}:${ss}`, isHour: true };
     }
-    return { h: "00", m: mm, s: ss, isHour: false };
+    return { display: `${mm}:${ss}`, isHour: false };
   };
 
   const time = formatTime(elapsed);
@@ -112,14 +139,19 @@ export function ActiveTimer() {
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div 
-                    className="flex shrink-0 items-center justify-center w-10 h-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#242424] transition-colors ml-2 cursor-pointer"
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#242424] transition-colors ml-2 cursor-pointer px-3 gap-2"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
-                      <span
-                        className="w-3.5 h-3.5 rounded-full"
-                        style={{ backgroundColor: selectedProject.color }}
-                      />
+                      <>
+                        <span
+                          className="w-3.5 h-3.5 rounded-full"
+                          style={{ backgroundColor: selectedProject.color }}
+                        />
+                        <span className="text-xs font-medium text-white max-w-[100px] truncate">
+                          {selectedProject.name}
+                        </span>
+                      </>
                     ) : (
                       <FolderOpen className="w-4 h-4 text-muted-foreground" />
                     )}
@@ -149,28 +181,71 @@ export function ActiveTimer() {
           </>
         ) : (
           <>
-            <div className="flex items-center w-full max-w-lg mb-6">
+            <div className="flex items-center w-full max-w-lg mb-6 relative">
               <input
                 type="text"
                 placeholder="O que vamos focar agora?"
                 value={taskName}
-                onChange={(e) => handleTaskNameChange(e.target.value)}
+                onChange={(e) => {
+                  handleTaskNameChange(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleToggleTimer();
                 }}
                 className="flex-1 bg-transparent text-center text-2xl font-bold text-white placeholder:text-[#333333] border-none focus:outline-none transition-colors ml-12"
               />
+
+              {/* Suggestions dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-full max-w-md bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl overflow-hidden z-50 shadow-2xl">
+                  <div className="px-3 py-2 border-b border-[#2A2A2A] bg-[#242424]/50 flex items-center gap-2">
+                    <History className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sugestões anteriores</span>
+                  </div>
+                  {suggestions.map(([name, pid]) => (
+                    <button
+                      key={name}
+                      onClick={() => {
+                        setTaskName(name);
+                        setProjectId(pid);
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-[#242424] transition-colors flex items-center justify-between group"
+                    >
+                      <span className="text-sm text-white group-hover:text-cyan-glow transition-colors">{name}</span>
+                      {pid && (
+                        <div className="flex items-center gap-1.5 bg-[#2A2A2A] px-2 py-0.5 rounded-full">
+                          <span 
+                            className="w-2 h-2 rounded-full" 
+                            style={{ backgroundColor: projects.find(p => p.id === pid)?.color }} 
+                          />
+                          <span className="text-[10px] text-muted-foreground">{projects.find(p => p.id === pid)?.name}</span>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div 
-                    className="flex shrink-0 items-center justify-center w-10 h-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#242424] transition-colors ml-2 cursor-pointer"
+                    className="flex shrink-0 items-center justify-center h-10 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] hover:bg-[#242424] transition-colors ml-2 cursor-pointer px-3 gap-2"
                     title={selectedProject ? selectedProject.name : "Vincular a um projeto"}
                   >
                     {selectedProject ? (
-                      <span
-                        className="w-3.5 h-3.5 rounded-full"
-                        style={{ backgroundColor: selectedProject.color }}
-                      />
+                      <>
+                        <span
+                          className="w-3.5 h-3.5 rounded-full"
+                          style={{ backgroundColor: selectedProject.color }}
+                        />
+                        <span className="text-xs font-medium text-white max-w-[100px] truncate">
+                          {selectedProject.name}
+                        </span>
+                      </>
                     ) : (
                       <FolderOpen className="w-4 h-4 text-muted-foreground" />
                     )}
@@ -237,22 +312,9 @@ export function ActiveTimer() {
         <div className="flex flex-col items-center z-10">
           <div className="flex items-baseline gap-2">
             <div className="flex items-baseline">
-              {time.isHour ? (
-                <>
-                  <span className={`text-6xl font-bold tabular-nums tracking-tight ${activeTimer ? "text-white" : "text-[#555555]"}`}>
-                    {time.h}:{time.m}
-                  </span>
-                  <span className={`text-4xl font-bold tabular-nums ${activeTimer ? "text-cyan-glow" : "text-[#333333]"}`}>
-                    :{time.s}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className={`text-7xl font-bold tabular-nums tracking-tight ${activeTimer ? "text-white" : "text-[#555555]"}`}>
-                    {time.m}:{time.s}
-                  </span>
-                </>
-              )}
+              <span className={`text-7xl font-bold tabular-nums tracking-tight ${activeTimer ? "text-white" : "text-[#555555]"}`}>
+                {time.display}
+              </span>
             </div>
             {!time.isHour && (
               <span className={`text-2xl font-bold ${activeTimer ? "text-cyan-glow" : "text-[#333333]"} self-end mb-2`}>

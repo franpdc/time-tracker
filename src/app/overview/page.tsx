@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState } from "react";
 import { format, subDays, addDays, startOfWeek, endOfWeek, isSameDay, isSameMonth, isWithinInterval, startOfMonth, endOfMonth, startOfDay, subMonths, addMonths, startOfYear, endOfYear, addYears, subYears, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, MoreHorizontal, Trash2, Undo2, Copy, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, MoreHorizontal, Trash2, Download, Pencil } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
+import { formatDuration } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   DropdownMenu,
@@ -12,6 +13,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import React, { useEffect } from "react";
+import { AddManualEntryModal } from "@/components/timer/add-manual-entry-modal";
+import { EditEntryModal } from "@/components/timer/edit-entry-modal";
+
 
 type ViewMode = "hoje" | "esta-semana" | "este-mes" | "este-ano";
 
@@ -148,23 +153,15 @@ export default function OverviewPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("hoje");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<typeof entries[0] | null>(null);
+  const [mounted, setMounted] = React.useState(false);
 
-  const handleCopyLog = () => {
-    const logLines = projectDataForDonut.map(p => `${p.name.toUpperCase()}: ${formatLogDuration(p.duration)}`);
-    const totalLine = `Total: ${formatLogDuration(totalSeconds)}`;
-    const logTitle = viewMode === "hoje" ? "Log Diário" : 
-                     viewMode === "esta-semana" ? "Log da Semana" :
-                     viewMode === "este-mes" ? "Log do Mês" : "Log do Ano";
-    const fullLog = `${logTitle} - ${dateLabel}\n\n${logLines.join("\n")}\n\n${totalLine}`;
-    
-    navigator.clipboard.writeText(fullLog);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const getProjectColor = useCallback((id: string | null) => projects.find(p => p.id === id)?.color || "#555555", [projects]);
-  const getProjectName = useCallback((id: string | null) => projects.find(p => p.id === id)?.name || "Sem Projeto", [projects]);
+  const getProjectColor = (id: string | null) => projects.find(p => p.id === id)?.color || "#555555";
+  const getProjectName = (id: string | null) => projects.find(p => p.id === id)?.name || "Sem Projeto";
 
   const views: { key: ViewMode; label: string }[] = [
     { key: "hoje", label: "Hoje" },
@@ -196,8 +193,8 @@ export default function OverviewPage() {
           : format(currentDate, "yyyy");
 
   // Filtering entries based on viewMode
-  const filteredEntries = useMemo(() => {
-    return entries.filter((entry) => {
+  const filteredEntries = entries
+    .filter((entry) => {
       const entryDate = new Date(entry.startedAt);
       if (viewMode === "hoje") {
         return isSameDay(entryDate, currentDate);
@@ -218,121 +215,105 @@ export default function OverviewPage() {
         });
       }
       return true;
-    });
-  }, [entries, currentDate, viewMode]);
+    })
+    .sort((a, b) => b.startedAt - a.startedAt);
 
   // Derived stats
   const totalSeconds = filteredEntries.reduce((acc, curr) => acc + curr.duration, 0);
-  const totalHours = Math.floor(totalSeconds / 3600);
-  const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
-  const formatTotal = () => `${String(totalHours).padStart(2, "0")}:${String(totalMinutes).padStart(2, "0")}`;
+  const formatTotal = () => formatDuration(totalSeconds);
 
   const sessionsCount = filteredEntries.length;
 
   // Project distribution
-  const projectDurations = useMemo(() => {
-    const acc: Record<string, number> = {};
-    filteredEntries.forEach((e) => {
-      const pid = e.projectId || "Sem Projeto";
-      acc[pid] = (acc[pid] || 0) + e.duration;
-    });
-    return acc;
-  }, [filteredEntries]);
+  const projectDurations: Record<string, number> = {};
+  filteredEntries.forEach((e) => {
+    const pid = e.projectId || "Sem Projeto";
+    projectDurations[pid] = (projectDurations[pid] || 0) + e.duration;
+  });
 
   const topProjectEntry = Object.entries(projectDurations).sort((a, b) => b[1] - a[1])[0];
   const topProjectName = topProjectEntry 
     ? (topProjectEntry[0] === "Sem Projeto" ? "Sem Projeto" : projects.find(p => p.id === topProjectEntry[0])?.name || "Desconhecido")
     : "Nenhum";
 
-  const projectDataForDonut = useMemo(() => {
-    const data = Object.entries(projectDurations).map(([id, duration]) => ({
-      name: getProjectName(id === "Sem Projeto" ? null : id),
-      color: getProjectColor(id === "Sem Projeto" ? null : id),
-      duration,
-    }));
-    return data.sort((a, b) => b.duration - a.duration);
-  }, [projectDurations, getProjectName, getProjectColor]);
+  const projectDataForDonut = Object.entries(projectDurations).map(([id, duration]) => ({
+    name: getProjectName(id === "Sem Projeto" ? null : id),
+    color: getProjectColor(id === "Sem Projeto" ? null : id),
+    duration,
+  })).sort((a, b) => b.duration - a.duration);
 
   // Dynamic Bar Chart Data based on viewMode
-  const chartData = useMemo(() => {
-    const getBreakdown = (dayEntries: typeof entries) => {
-      const breakdown: Record<string, number> = {};
-      dayEntries.forEach(e => {
-        const pid = e.projectId || "Sem Projeto";
-        breakdown[pid] = (breakdown[pid] || 0) + e.duration;
-      });
-      return Object.entries(breakdown).map(([id, val]) => ({
-        name: getProjectName(id === "Sem Projeto" ? null : id),
-        color: getProjectColor(id === "Sem Projeto" ? null : id),
-        value: val
-      })).sort((a,b) => b.value - a.value);
-    };
+  const getBreakdown = (dayEntries: typeof entries) => {
+    const breakdown: Record<string, number> = {};
+    dayEntries.forEach(e => {
+      const pid = e.projectId || "Sem Projeto";
+      breakdown[pid] = (breakdown[pid] || 0) + e.duration;
+    });
+    return Object.entries(breakdown).map(([id, val]) => ({
+      name: getProjectName(id === "Sem Projeto" ? null : id),
+      color: getProjectColor(id === "Sem Projeto" ? null : id),
+      value: val
+    })).sort((a,b) => b.value - a.value);
+  };
 
-    if (viewMode === "hoje") {
-      // Just one column representing today
-      return [{ label: "Hoje", value: totalSeconds, breakdown: getBreakdown(filteredEntries) }];
-    } else if (viewMode === "esta-semana") {
-      // 7 days
-      const days = eachDayOfInterval({
-        start: startOfWeek(currentDate, { weekStartsOn: 1 }),
-        end: endOfWeek(currentDate, { weekStartsOn: 1 })
-      });
-      return days.map(day => {
-        const dayEntries = filteredEntries.filter(e => isSameDay(new Date(e.startedAt), day));
-        const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0);
-        return { label: format(day, "EEEE", { locale: ptBR }).slice(0, 3), value, breakdown: getBreakdown(dayEntries) };
-      });
-    } else if (viewMode === "este-mes") {
-      // Days of month
-      const days = eachDayOfInterval({
-        start: startOfMonth(currentDate),
-        end: endOfMonth(currentDate)
-      });
-      return days.map(day => {
-        const dayEntries = filteredEntries.filter(e => isSameDay(new Date(e.startedAt), day));
-        const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0);
-        return { label: format(day, "dd"), value, breakdown: getBreakdown(dayEntries) };
-      });
-    } else if (viewMode === "este-ano") {
-      // Months of year
-      const months = eachMonthOfInterval({
-        start: startOfYear(currentDate),
-        end: endOfYear(currentDate)
-      });
-      return months.map(month => {
-        const monthEntries = filteredEntries.filter(e => isWithinInterval(new Date(e.startedAt), {
-            start: startOfMonth(month),
-            end: endOfMonth(month)
-          }));
-        const value = monthEntries.reduce((acc, curr) => acc + curr.duration, 0);
-        return { label: format(month, "MMM", { locale: ptBR }), value, breakdown: getBreakdown(monthEntries) };
-      });
-    }
-    return [];
-  }, [viewMode, currentDate, filteredEntries, totalSeconds, getProjectName, getProjectColor]);
+  let chartData: { label: string; value: number; breakdown: BreakdownItem[] }[] = [];
+  if (viewMode === "hoje") {
+    chartData = [{ label: "Hoje", value: totalSeconds, breakdown: getBreakdown(filteredEntries) }];
+  } else if (viewMode === "esta-semana") {
+    const days = eachDayOfInterval({
+      start: startOfWeek(currentDate, { weekStartsOn: 1 }),
+      end: endOfWeek(currentDate, { weekStartsOn: 1 })
+    });
+    chartData = days.map(day => {
+      const dayEntries = filteredEntries.filter(e => isSameDay(new Date(e.startedAt), day));
+      const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0);
+      return { label: format(day, "EEEE", { locale: ptBR }).slice(0, 3), value, breakdown: getBreakdown(dayEntries) };
+    });
+  } else if (viewMode === "este-mes") {
+    const days = eachDayOfInterval({
+      start: startOfMonth(currentDate),
+      end: endOfMonth(currentDate)
+    });
+    chartData = days.map(day => {
+      const dayEntries = filteredEntries.filter(e => isSameDay(new Date(e.startedAt), day));
+      const value = dayEntries.reduce((acc, curr) => acc + curr.duration, 0);
+      return { label: format(day, "dd"), value, breakdown: getBreakdown(dayEntries) };
+    });
+  } else if (viewMode === "este-ano") {
+    const months = eachMonthOfInterval({
+      start: startOfYear(currentDate),
+      end: endOfYear(currentDate)
+    });
+    chartData = months.map(month => {
+      const monthEntries = filteredEntries.filter(e => isWithinInterval(new Date(e.startedAt), {
+          start: startOfMonth(month),
+          end: endOfMonth(month)
+        }));
+      const value = monthEntries.reduce((acc, curr) => acc + curr.duration, 0);
+      return { label: format(month, "MMM", { locale: ptBR }), value, breakdown: getBreakdown(monthEntries) };
+    });
+  }
 
   const maxBarValue = Math.max(...chartData.map((d) => d.value), 1); // Avoid div by 0
   const donutTotal = projectDataForDonut.reduce((acc, p) => acc + p.duration, 0) || 1;
 
   // Streak calculation (consecutive days with >0 focus time leading up to today)
-  const streak = useMemo(() => {
-    const today = startOfDay(new Date());
-    let currentStreak = 0;
-    
-    const daysWithFocus = new Set(
-      entries.map(e => startOfDay(new Date(e.startedAt)).getTime())
-    );
+  const today = startOfDay(new Date());
+  let currentStreak = 0;
+  
+  const daysWithFocus = new Set(
+    entries.map(e => startOfDay(new Date(e.startedAt)).getTime())
+  );
 
-    for (let i = 0; i < 365; i++) {
-      const dateToCheck = startOfDay(subDays(today, i)).getTime();
-      if (daysWithFocus.has(dateToCheck)) {
-        currentStreak++;
-      } else if (i > 0) {
-        break; // Stop if it's not today and there's a gap
-      }
+  for (let i = 0; i < 365; i++) {
+    const dateToCheck = startOfDay(subDays(today, i)).getTime();
+    if (daysWithFocus.has(dateToCheck)) {
+      currentStreak++;
+    } else if (i > 0) {
+      break; // Stop if it's not today and there's a gap
     }
-    return currentStreak;
-  }, [entries]);
+  }
+  const streak = currentStreak;
 
 
   return (
@@ -345,13 +326,24 @@ export default function OverviewPage() {
             Acompanhe seu foco ao longo do tempo
           </p>
         </div>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span>{format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground min-h-[40px]">
+          {mounted && (
+            <>
+              <span>{format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
+              <AddManualEntryModal />
+            </>
+          )}
         </div>
       </header>
 
       <div className="flex-1 overflow-y-auto px-8 py-6">
-        {/* View mode tabs */}
+        {!mounted ? (
+          <div className="flex items-center justify-center h-64">
+             <div className="animate-spin h-8 w-8 border-4 border-cyan-glow border-t-transparent rounded-full"></div>
+          </div>
+        ) : (
+          <>
+            {/* View mode tabs */}
         <div className="flex items-center gap-6 mb-6">
           <div className="flex items-center gap-1 bg-[#1A1A1A] rounded-xl p-1">
             {views.map((v) => (
@@ -406,7 +398,7 @@ export default function OverviewPage() {
               <p className="text-3xl font-bold text-cyan-glow tracking-tight">
                 {formatTotal()}
               </p>
-              <p className="text-[11px] text-muted-foreground mt-1">horas {viewMode === "hoje" ? "hoje" : "no período"}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">tempo {viewMode === "hoje" ? "hoje" : "no período"}</p>
             </div>
             <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
               <p className="text-xs text-muted-foreground mb-1">Sessões</p>
@@ -430,49 +422,15 @@ export default function OverviewPage() {
           {/* Log Card */}
           <div className="xl:col-span-2 bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <h3 className="text-lg font-bold text-white">
-                  {viewMode === "hoje" ? "Log Diário" : 
-                   viewMode === "esta-semana" ? "Log da Semana" :
-                   viewMode === "este-mes" ? "Log do Mês" : "Log do Ano"}
-                </h3>
-                <div className="flex items-center gap-1">
-                  <button className="p-1 hover:bg-[#2A2A2A] rounded text-muted-foreground hover:text-white transition-colors">
-                    <Undo2 className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={handleCopyLog}
-                    className="p-1 hover:bg-[#2A2A2A] rounded text-muted-foreground hover:text-white transition-colors"
-                    title="Copiar log"
-                  >
-                    {copied ? <Check className="w-4 h-4 text-cyan-glow" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
+              <h3 className="text-lg font-bold text-white">
+                {viewMode === "hoje" ? "Log Diário" : 
+                 viewMode === "esta-semana" ? "Log da Semana" :
+                 viewMode === "este-mes" ? "Log do Mês" : "Log do Ano"}
+              </h3>
               
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={goBack}
-                  className="p-1 hover:bg-[#2A2A2A] rounded text-muted-foreground hover:text-white transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <span className="text-sm font-medium text-white">
-                  {viewMode === "hoje" ? format(currentDate, "dd/MM") : dateLabel}
-                </span>
-                <button 
-                  onClick={goForward}
-                  className="p-1 hover:bg-[#2A2A2A] rounded text-muted-foreground hover:text-white transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-                <button 
-                  onClick={() => setCurrentDate(new Date())}
-                  className="ml-1 px-3 py-1 bg-[#242424] hover:bg-[#2A2A2A] text-[10px] font-bold text-muted-foreground hover:text-white rounded-full transition-colors uppercase tracking-wider"
-                >
-                  Hoje
-                </button>
-              </div>
+              <span className="text-sm font-medium text-muted-foreground">
+                {viewMode === "hoje" ? format(currentDate, "dd/MM") : dateLabel}
+              </span>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -726,7 +684,7 @@ export default function OverviewPage() {
               </p>
             </div>
             <button className="flex items-center gap-1.5 text-xs font-medium text-cyan-glow hover:text-cyan-glow/80 transition-colors">
-              <Plus className="h-3.5 w-3.5" />
+              <Download className="h-3.5 w-3.5" />
               Exportar
             </button>
           </div>
@@ -756,13 +714,8 @@ export default function OverviewPage() {
                   </td>
                 </tr>
               ) : (
-                [...filteredEntries].reverse().map((entry) => {
-                  const pTotalHours = Math.floor(entry.duration / 3600);
-                  const pTotalMins = Math.floor((entry.duration % 3600) / 60);
-                  const pTotalSecs = entry.duration % 60;
-                  const dFormat = pTotalHours > 0 
-                    ? `${String(pTotalHours).padStart(2,"0")}:${String(pTotalMins).padStart(2,"0")}:${String(pTotalSecs).padStart(2,"0")}`
-                    : `${String(pTotalMins).padStart(2,"0")}:${String(pTotalSecs).padStart(2,"0")}`;
+                filteredEntries.map((entry) => {
+                  const dFormat = formatDuration(entry.duration);
 
                   return (
                     <tr key={entry.id} className="group hover:bg-[#1E1E1E] transition-colors">
@@ -782,12 +735,21 @@ export default function OverviewPage() {
                         <div className="flex items-center justify-end gap-3">
                           <span>{dFormat}</span>
                           <DropdownMenu>
-                            <DropdownMenuTrigger>
-                              <div className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-[#2A2A2A] hover:text-white transition-all cursor-pointer">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </div>
+                            <DropdownMenuTrigger
+                              render={
+                                <button className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-[#2A2A2A] hover:text-white transition-all cursor-pointer" />
+                              }
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-32 bg-[#1A1A1A] border-[#2A2A2A]">
+                              <DropdownMenuItem
+                                onClick={() => setEditingEntry(entry)}
+                                className="focus:bg-[#242424] cursor-pointer flex items-center gap-2"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Editar
+                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
                                   if (confirm("Excluir esta sessão de foco?")) deleteEntry(entry.id);
@@ -818,6 +780,19 @@ export default function OverviewPage() {
             )}
           </table>
         </div>
+
+        {/* Edit Entry Modal — rendered outside the dropdown to avoid nesting conflicts */}
+        {editingEntry && (
+          <EditEntryModal
+            entry={editingEntry}
+            open={!!editingEntry}
+            onOpenChange={(open) => {
+              if (!open) setEditingEntry(null);
+            }}
+          />
+        )}
+        </>
+        )}
       </div>
     </div>
   );
