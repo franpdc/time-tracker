@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/layout/sidebar";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -43,6 +44,17 @@ export default function RootLayout({
                 {children}
               </main>
             </div>
+            <Toaster
+              theme="dark"
+              position="bottom-right"
+              toastOptions={{
+                style: {
+                  background: '#1A1A1A',
+                  border: '1px solid #2A2A2A',
+                  color: '#fff',
+                },
+              }}
+            />
           </TooltipProvider>
         </ThemeProvider>
       </body>

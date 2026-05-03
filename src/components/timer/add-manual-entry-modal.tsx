@@ -4,6 +4,8 @@ import { useState } from "react";
 import { format, parse } from "date-fns";
 import { FolderOpen, Plus } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
+import { toast } from "sonner";
+import { formatDuration } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +62,9 @@ export function AddManualEntryModal() {
       });
 
       // Reset and close
+      toast.success(`Sessão de ${formatDuration(duration)} adicionada`, {
+        description: taskName.trim() || "Foco manual",
+      });
       setTaskName("");
       setProjectId(null);
       setOpen(false);

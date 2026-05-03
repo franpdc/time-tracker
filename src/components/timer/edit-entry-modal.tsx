@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { format, parse } from "date-fns";
 import { FolderOpen, Pencil } from "lucide-react";
 import { useAppStore, TimeEntry } from "@/store/useTimerStore";
+import { toast } from "sonner";
+import { formatDuration } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +74,9 @@ export function EditEntryModal({ entry, open, onOpenChange }: EditEntryModalProp
         duration,
       });
 
+      toast.success("Sessão atualizada", {
+        description: taskName.trim() || "Foco manual",
+      });
       onOpenChange(false);
     } catch (err) {
       console.error("Invalid date or time", err);

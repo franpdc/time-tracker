@@ -49,7 +49,7 @@ interface AppState {
   startTimer: (taskName: string, projectId: string | null) => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
-  stopTimer: () => void;
+  stopTimer: () => TimeEntry | null;
   updateTimer: (taskName: string, projectId: string | null) => void;
 
   // History
@@ -57,6 +57,10 @@ interface AppState {
   addEntry: (entry: TimeEntry) => void;
   updateEntry: (id: string, updates: Partial<TimeEntry>) => void;
   deleteEntry: (id: string) => void;
+
+  // Daily goal
+  dailyGoalMinutes: number;
+  setDailyGoal: (minutes: number) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -76,15 +80,10 @@ export const useAppStore = create<AppState>()(
       },
       deleteFolder: (id) => {
         set((state) => {
-          const folderProjects = state.projects.filter((p) => p.id === id);
-          const folderProjectIds = folderProjects.map((p) => p.id);
-          
           return {
             folders: state.folders.filter((f) => f.id !== id),
             // Also set folderId to null for all projects in this folder
             projects: state.projects.map((p) => (p.folderId === id ? { ...p, folderId: null } : p)),
-            // If active timer is in this folder (via project), it stays but project remains
-            // No, if folder is deleted, projects are moved to root, so we don't need to clear activeTimer project
           };
         });
       },
@@ -166,7 +165,10 @@ export const useAppStore = create<AppState>()(
             activeTimer: null,
             entries: [...entries, newEntry],
           });
+
+          return newEntry;
         }
+        return null;
       },
       updateTimer: (taskName, projectId) => {
         set((state) => ({
@@ -190,10 +192,16 @@ export const useAppStore = create<AppState>()(
           entries: state.entries.filter((e) => e.id !== id),
         }));
       },
+
+      // Daily goal (default 4h = 240 min)
+      dailyGoalMinutes: 240,
+      setDailyGoal: (minutes) => {
+        set({ dailyGoalMinutes: minutes });
+      },
     }),
     {
       name: "time-tracker-storage",
-      version: 1, // bump version to clear initial mock data
+      version: 1,
     }
   )
 );

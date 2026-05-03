@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format, subDays, addDays, startOfWeek, endOfWeek, isSameDay, isSameMonth, isWithinInterval, startOfMonth, endOfMonth, startOfDay, subMonths, addMonths, startOfYear, endOfYear, addYears, subYears, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, MoreHorizontal, Trash2, Download, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, MoreHorizontal, Trash2, Download, Pencil, Play } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
 import { formatDuration } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,6 +16,7 @@ import {
 import React, { useEffect } from "react";
 import { AddManualEntryModal } from "@/components/timer/add-manual-entry-modal";
 import { EditEntryModal } from "@/components/timer/edit-entry-modal";
+import { toast } from "sonner";
 
 
 type ViewMode = "hoje" | "esta-semana" | "este-mes" | "este-ano";
@@ -149,7 +150,7 @@ const formatLogDuration = (seconds: number) => {
 };
 
 export default function OverviewPage() {
-  const { entries, projects, deleteEntry } = useAppStore();
+  const { entries, projects, deleteEntry, startTimer } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("hoje");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -391,28 +392,28 @@ export default function OverviewPage() {
 
         {/* Stats and Log row */}
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 mb-8">
-          {/* Stats cards grid */}
+          {/* Stats cards grid — Total de foco is larger for visual hierarchy */}
           <div className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
-              <p className="text-xs text-muted-foreground mb-1">Total de foco</p>
-              <p className="text-3xl font-bold text-cyan-glow tracking-tight">
+            <div className="bg-gradient-to-br from-cyan-glow/10 to-transparent rounded-2xl p-5 border border-cyan-glow/20">
+              <p className="text-xs text-cyan-glow/70 mb-1 font-medium">Total de foco</p>
+              <p className="text-4xl font-bold text-cyan-glow tracking-tight">
                 {formatTotal()}
               </p>
-              <p className="text-[11px] text-muted-foreground mt-1">tempo {viewMode === "hoje" ? "hoje" : "no período"}</p>
+              <p className="text-[11px] text-cyan-glow/50 mt-1">tempo {viewMode === "hoje" ? "hoje" : "no período"}</p>
             </div>
             <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
               <p className="text-xs text-muted-foreground mb-1">Sessões</p>
-              <p className="text-3xl font-bold text-white tracking-tight">{sessionsCount}</p>
+              <p className="text-2xl font-bold text-white tracking-tight">{sessionsCount}</p>
               <p className="text-[11px] text-muted-foreground mt-1">sessões de foco</p>
             </div>
             <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
               <p className="text-xs text-muted-foreground mb-1">Área principal</p>
-              <p className="text-3xl font-bold text-white tracking-tight truncate">{topProjectName}</p>
+              <p className="text-lg font-bold text-white tracking-tight truncate">{topProjectName}</p>
               <p className="text-[11px] text-muted-foreground mt-1">mais focado</p>
             </div>
             <div className="bg-[#1A1A1A] rounded-2xl p-5 border border-[#2A2A2A]">
               <p className="text-xs text-muted-foreground mb-1">Sequência</p>
-              <p className="text-3xl font-bold text-white tracking-tight">{streak}</p>
+              <p className="text-2xl font-bold text-white tracking-tight">{streak} <span className="text-sm font-normal text-muted-foreground">dias</span></p>
               <p className="text-[11px] text-green-live mt-1 flex items-center gap-1">
                 <span>↑ dias seguidos</span>
               </p>
@@ -672,6 +673,74 @@ export default function OverviewPage() {
           </div>
         </div>
 
+        {/* Contribution Heatmap for Year View */}
+        {viewMode === "este-ano" && (() => {
+          const yearStart = startOfYear(currentDate);
+          const yearEnd = endOfYear(currentDate);
+          const allDays = eachDayOfInterval({ start: yearStart, end: yearEnd });
+          const dayDurations = new Map<string, number>();
+          filteredEntries.forEach(e => {
+            const key = format(new Date(e.startedAt), "yyyy-MM-dd");
+            dayDurations.set(key, (dayDurations.get(key) || 0) + e.duration);
+          });
+          const maxDaySeconds = Math.max(...Array.from(dayDurations.values()), 1);
+          const getIntensity = (seconds: number) => {
+            if (seconds === 0) return "bg-[#1A1A1A]";
+            const pct = seconds / maxDaySeconds;
+            if (pct < 0.25) return "bg-cyan-glow/20";
+            if (pct < 0.5) return "bg-cyan-glow/40";
+            if (pct < 0.75) return "bg-cyan-glow/60";
+            return "bg-cyan-glow/90";
+          };
+          // Group by weeks
+          const weeks: Date[][] = [];
+          let currentWeek: Date[] = [];
+          allDays.forEach((d, i) => {
+            currentWeek.push(d);
+            if (d.getDay() === 0 || i === allDays.length - 1) {
+              weeks.push(currentWeek);
+              currentWeek = [];
+            }
+          });
+
+          return (
+            <div className="bg-[#1A1A1A] rounded-2xl p-6 border border-[#2A2A2A] mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Mapa de contribuições</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Consistência ao longo do ano</p>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span>Menos</span>
+                  <span className="w-3 h-3 rounded-sm bg-[#1A1A1A] border border-[#2A2A2A]" />
+                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/20" />
+                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/40" />
+                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/60" />
+                  <span className="w-3 h-3 rounded-sm bg-cyan-glow/90" />
+                  <span>Mais</span>
+                </div>
+              </div>
+              <div className="flex gap-[3px] overflow-x-auto pb-2">
+                {weeks.map((week, wi) => (
+                  <div key={wi} className="flex flex-col gap-[3px]">
+                    {week.map(d => {
+                      const key = format(d, "yyyy-MM-dd");
+                      const secs = dayDurations.get(key) || 0;
+                      return (
+                        <div
+                          key={key}
+                          className={`w-3 h-3 rounded-sm ${getIntensity(secs)} transition-colors`}
+                          title={`${format(d, "dd/MM")}: ${secs > 0 ? formatDuration(secs) : "Sem foco"}`}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Focus log table */}
         <div className="bg-[#1A1A1A] rounded-2xl p-6 border border-[#2A2A2A]">
           <div className="flex items-center justify-between mb-5">
@@ -683,9 +752,30 @@ export default function OverviewPage() {
                 Detalhamento de sessões de foco do período
               </p>
             </div>
-            <button className="flex items-center gap-1.5 text-xs font-medium text-cyan-glow hover:text-cyan-glow/80 transition-colors">
+            <button
+              onClick={() => {
+                if (filteredEntries.length === 0) {
+                  toast.error("Nenhuma sessão para exportar");
+                  return;
+                }
+                const header = "Data,Hora Início,Hora Fim,Tarefa,Projeto,Duração (min)\n";
+                const rows = filteredEntries.map(e => {
+                  const proj = projects.find(p => p.id === e.projectId)?.name || "Sem Projeto";
+                  return `${format(new Date(e.startedAt), "dd/MM/yyyy")},${format(new Date(e.startedAt), "HH:mm")},${format(new Date(e.endedAt), "HH:mm")},"${e.taskName}","${proj}",${Math.round(e.duration / 60)}`;
+                }).join("\n");
+                const blob = new Blob([header + rows], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `focustrack-${format(new Date(), "yyyy-MM-dd")}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                toast.success(`${filteredEntries.length} sessões exportadas`);
+              }}
+              className="flex items-center gap-1.5 text-xs font-medium text-cyan-glow hover:text-cyan-glow/80 transition-colors"
+            >
               <Download className="h-3.5 w-3.5" />
-              Exportar
+              Exportar CSV
             </button>
           </div>
 
@@ -719,8 +809,22 @@ export default function OverviewPage() {
 
                   return (
                     <tr key={entry.id} className="group hover:bg-[#1E1E1E] transition-colors">
-                      <td className="py-3 text-xs text-muted-foreground pl-2">
-                        {format(new Date(entry.startedAt), "dd/MM HH:mm")}
+                      <td className="py-3 pl-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              startTimer(entry.taskName, entry.projectId);
+                              toast("Timer iniciado", { description: entry.taskName });
+                            }}
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-transparent text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all opacity-0 group-hover:opacity-100"
+                            title="Continuar"
+                          >
+                            <Play className="h-3 w-3 ml-0.5" fill="currentColor" />
+                          </button>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(entry.startedAt), "dd/MM HH:mm")}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-2">
@@ -728,7 +832,7 @@ export default function OverviewPage() {
                           <span className="text-sm text-white">{getProjectName(entry.projectId)}</span>
                         </div>
                       </td>
-                      <td className="py-3 text-sm text-muted-foreground">
+                      <td className="py-3 text-sm text-muted-foreground max-w-[200px] truncate">
                         {entry.taskName}
                       </td>
                       <td className="py-3 text-sm text-white text-right font-medium pr-2 tabular-nums">
@@ -752,7 +856,10 @@ export default function OverviewPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
-                                  if (confirm("Excluir esta sessão de foco?")) deleteEntry(entry.id);
+                                  if (confirm("Excluir esta sessão de foco?")) {
+                                    deleteEntry(entry.id);
+                                    toast.success("Sessão excluída");
+                                  }
                                 }}
                                 className="text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2"
                               >
