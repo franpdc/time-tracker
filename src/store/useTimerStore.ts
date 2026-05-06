@@ -248,6 +248,9 @@ export const useAppStore = create<AppState>()(
     {
       name: "time-tracker-storage",
       version: 1,
+      migrate: (persistedState: unknown) => {
+        return persistedState as AppState;
+      },
     }
   )
 );
