@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon, Clock, Target } from "lucide-react";
+import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon, Clock, Target, Calendar } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "@/store/useTimerStore";
 import { useTheme } from "@teispace/next-themes";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
+  { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Overview", href: "/overview", icon: BarChart3 },
   { name: "Projetos", href: "/projetos", icon: FolderOpen },
   { name: "Time Audit", href: "/time-audit", icon: Clock },
