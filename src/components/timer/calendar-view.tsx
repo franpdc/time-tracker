@@ -45,8 +45,10 @@ export function CalendarView({
   
   // Zoom levels: pixels per minute
   // 0.4 = 24px/h (24h view), 0.7 = 42px/h, 1.1 = 66px/h, 1.8 = 108px/h, 2.6 = 156px/h, 3.8 = 228px/h (15m detail)
-  const zoomLevels = [0.4, 0.7, 1.1, 1.8, 2.6, 3.8];
-  const [zoomIndex, setZoomIndex] = useState(1);
+  // Zoom levels: pixels per minute
+  const zoomLevels = [0.4, 0.5, 0.65, 0.85, 1.25, 2.5, 5.0, 8.0];
+  const zoomLabels = ["24h", "20h", "16h", "12h", "8h", "4h", "2h", "Focus"];
+  const [zoomIndex, setZoomIndex] = useState(3); // Default to 12h
   const pixelsPerMinute = zoomLevels[zoomIndex];
   const hourHeight = pixelsPerMinute * 60;
 
@@ -155,12 +157,7 @@ export function CalendarView({
             </button>
             <div className="flex items-center px-1 min-w-[70px] justify-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 tabular-nums">
-                {zoomIndex === 0 && "24h"}
-                {zoomIndex === 1 && "12h"}
-                {zoomIndex === 2 && "8h"}
-                {zoomIndex === 3 && "4h"}
-                {zoomIndex === 4 && "2h"}
-                {zoomIndex === 5 && "Focus"}
+                {zoomLabels[zoomIndex]}
               </span>
             </div>
             <button
