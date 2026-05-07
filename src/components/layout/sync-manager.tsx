@@ -16,27 +16,37 @@ export function SyncManager() {
       console.log("Sync: Pulling data from Supabase...");
       
       const [
-        { data: profile },
+        { data: profile, error: profileError },
         { data: folders },
         { data: projects },
         { data: entries },
         { data: auditEntries },
         { data: progressItems },
       ] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", userId).single(),
+        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
         supabase.from("folders").select("*").eq("user_id", userId),
         supabase.from("projects").select("*").eq("user_id", userId),
-        supabase.from("time_entries").select("*").eq("user_id", userId),
+        supabase.from("time_entries").select("*").eq("user_id", userId).order("started_at", { ascending: false }),
         supabase.from("audit_entries").select("*").eq("user_id", userId),
         supabase.from("progress_items").select("*").eq("user_id", userId),
       ]);
 
+      if (profileError && profileError.code !== "PGRST116") {
+        console.error("Sync: Error fetching profile", profileError);
+      }
+
       const newState: Partial<typeof store> = {};
       
-      if (profile) newState.dailyGoalMinutes = profile.daily_goal_minutes;
-      if (folders?.length) newState.folders = folders.map(f => ({ id: f.id, name: f.name, isOpen: f.is_open, color: f.color }));
-      if (projects?.length) newState.projects = projects.map(p => ({ id: p.id, name: p.name, color: p.color, folderId: p.folder_id }));
-      if (entries?.length) newState.entries = entries.map(e => ({ 
+      if (profile) {
+        newState.dailyGoalMinutes = profile.daily_goal_minutes;
+        if (profile.active_timer) {
+          newState.activeTimer = profile.active_timer;
+        }
+      }
+
+      if (folders) newState.folders = folders.map(f => ({ id: f.id, name: f.name, isOpen: f.is_open, color: f.color }));
+      if (projects) newState.projects = projects.map(p => ({ id: p.id, name: p.name, color: p.color, folderId: p.folder_id }));
+      if (entries) newState.entries = entries.map(e => ({ 
         id: e.id, 
         taskName: e.task_name, 
         projectId: e.project_id, 
@@ -45,8 +55,13 @@ export function SyncManager() {
         duration: Number(e.duration), 
         source: e.source 
       }));
-      if (auditEntries?.length) newState.auditEntries = auditEntries.map(a => ({ id: a.id, name: a.name, hoursPerDay: Number(a.hours_per_day), daysPerWeek: a.days_per_week }));
-      if (progressItems?.length) newState.progressItems = progressItems.map(p => ({
+      if (auditEntries) newState.auditEntries = auditEntries.map(a => ({ 
+        id: a.id, 
+        name: a.name, 
+        hoursPerDay: Number(a.hours_per_day), 
+        daysPerWeek: Number(a.days_per_week) 
+      }));
+      if (progressItems) newState.progressItems = progressItems.map(p => ({
         id: p.id,
         projectId: p.project_id,
         period: p.period,
@@ -54,8 +69,8 @@ export function SyncManager() {
         durationTargetMinutes: p.duration_target_minutes,
         behaviorDescription: p.behavior_description,
         createdAt: Number(p.created_at),
-        motivations: p.motivations,
-        sessionLogs: p.session_logs
+        motivations: p.motivations || [],
+        sessionLogs: p.session_logs || []
       }));
 
       if (Object.keys(newState).length > 0) {
@@ -75,7 +90,12 @@ export function SyncManager() {
       console.log("Sync: Pushing data to Supabase...");
       
       await Promise.all([
-        supabase.from("profiles").upsert({ id: userId, daily_goal_minutes: store.dailyGoalMinutes }),
+        supabase.from("profiles").upsert({ 
+          id: userId, 
+          daily_goal_minutes: store.dailyGoalMinutes,
+          active_timer: store.activeTimer,
+          updated_at: new Date().toISOString()
+        }),
         
         ...store.folders.map(f => supabase.from("folders").upsert({ 
           id: f.id, user_id: userId, name: f.name, is_open: f.isOpen, color: f.color, updated_at: new Date().toISOString() 
@@ -118,7 +138,7 @@ export function SyncManager() {
     } catch (error) {
       console.error("Sync: Error pushing data", error);
     }
-  }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems]);
+  }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems, store.activeTimer]);
 
   // 1. Initial Pull & Auth Listener
   useEffect(() => {
@@ -158,7 +178,7 @@ export function SyncManager() {
     }, 2000); // 2 second debounce
 
     return () => clearTimeout(timeout);
-  }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems, pushToSupabase]);
+  }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems, store.activeTimer, pushToSupabase]);
 
   return null;
 }
