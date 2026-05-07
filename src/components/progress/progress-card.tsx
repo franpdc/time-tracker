@@ -84,7 +84,7 @@ export function ProgressCard({ item, onClick }: ProgressCardProps) {
               "text-xl font-bold tabular-nums tracking-tight",
               stats.isCompleted ? "text-muted-foreground" : "text-cyan-glow"
             )}>
-              {stats.sessionsCompleted}
+              {Math.floor(stats.sessionsCompleted)}
             </span>
             <span className="text-xs text-muted-foreground font-medium">
               / {item.sessionTarget} {item.sessionTarget === 1 ? 'sessão' : 'sessões'}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format, parse } from "date-fns";
-import { FolderOpen, Play, Square, Pause, Trash2 } from "lucide-react";
+import { FolderOpen, Play, Square, Pause, Trash2, History } from "lucide-react";
 import { useAppStore, TimeEntry, ActiveTimer } from "@/store/useTimerStore";
 import { toast } from "sonner";
 import { formatDuration } from "@/lib/utils";
@@ -32,7 +32,7 @@ interface EditEntryModalProps {
 
 export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive }: EditEntryModalProps) {
   const { 
-    projects, updateEntry, deleteEntry,
+    projects, updateEntry, deleteEntry, entries,
     pauseTimer, resumeTimer, stopTimer, updateActiveTimer 
   } = useAppStore();
   
@@ -42,6 +42,19 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [elapsed, setElapsed] = useState(0);
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Suggestions logic
+  const recentTasksMap = new Map<string, string | null>();
+  entries.forEach(e => {
+    if (e.taskName && !recentTasksMap.has(e.taskName)) {
+      recentTasksMap.set(e.taskName, e.projectId);
+    }
+  });
+  const suggestions = Array.from(recentTasksMap.entries())
+    .filter(([name]) => name.toLowerCase().includes(taskName.toLowerCase()))
+    .slice(0, 5);
 
   // Initial state and live elapsed logic
   useEffect(() => {
@@ -208,15 +221,49 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-xs text-muted-foreground font-medium">O que você fez?</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Ex: Trabalho, Estudo..."
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-                required
-                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200"
-              />
+            <div className="flex items-center gap-2 relative">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Ex: Trabalho, Estudo..."
+                  value={taskName}
+                  onChange={(e) => { setTaskName(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  required
+                  className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200"
+                />
+
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl overflow-hidden z-50 shadow-elevated">
+                    <div className="px-3 py-2 border-b border-border flex items-center gap-2 bg-surface-hover">
+                      <History className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.5} />
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Recentes</span>
+                    </div>
+                    {suggestions.map(([name, pid]) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={(e) => { 
+                          e.preventDefault();
+                          setTaskName(name); 
+                          setProjectId(pid); 
+                          setShowSuggestions(false); 
+                        }}
+                        className="w-full px-3 py-2.5 text-left hover:bg-surface-hover transition-colors duration-150 flex items-center justify-between"
+                      >
+                        <span className="text-sm text-foreground">{name}</span>
+                        {pid && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: projects.find(p => p.id === pid)?.color }} />
+                            <span className="text-[10px] font-medium text-muted-foreground">{projects.find(p => p.id === pid)?.name}</span>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div

@@ -456,13 +456,14 @@ export const useAppStore = create<AppState>()(
 
         if (item.durationTargetMinutes) {
           const targetSec = item.durationTargetMinutes * 60;
-          sessionsCompleted = Math.floor(totalTrackedDuration / targetSec);
+          // Calculate sessions as "units of work" based on total duration
+          sessionsCompleted = totalTrackedDuration / targetSec;
           
           if (sessionsCompleted < item.sessionTarget) {
             remainingDurationForCurrentGoal = targetSec - (totalTrackedDuration % targetSec);
           }
         } else {
-          // If no duration target, every session entry counts as 1
+          // If no duration target, every discrete session entry counts as 1
           sessionsCompleted = projectSessions.length;
           
           // Count active timer as 1 if it's running
