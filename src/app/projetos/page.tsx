@@ -22,15 +22,28 @@ export default function ProjetosPage() {
 
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderColor, setNewFolderColor] = useState("#64748b");
 
   const [addingProjectToFolderId, setAddingProjectToFolderId] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectColor, setNewProjectColor] = useState("#00F5FF");
 
-  const colors = ["#00F5FF", "#FF6B00", "#00E676", "#A855F7", "#F43F5E", "#EAB308", "#3B82F6"];
+  const colors = [
+    // Neutrals
+    "#64748b", "#6b7280", "#71717a",
+    // Blues
+    "#3b82f6", "#0ea5e9", "#6366f1",
+    // Greens
+    "#10b981", "#22c55e", "#84cc16",
+    // Warm
+    "#f59e0b", "#f97316", "#ef4444",
+    // Accent
+    "#a855f7", "#8b5cf6", "#ec4899",
+    "#f43f5e", "#14b8a6", "#00F5FF"
+  ];
 
   const ColorPickerMenu = ({ currentColor, onSelect }: { currentColor: string, onSelect: (color: string) => void }) => (
-    <div className="flex flex-wrap gap-1.5 p-2 w-32">
+    <div className="grid grid-cols-6 gap-1.5 p-3 w-48">
       {colors.map(c => (
         <button
           key={c}
@@ -45,8 +58,9 @@ export default function ProjetosPage() {
 
   const handleAddFolder = () => {
     if (newFolderName.trim()) {
-      addFolder(newFolderName.trim());
+      addFolder(newFolderName.trim(), newFolderColor);
       setNewFolderName("");
+      setNewFolderColor(colors[0]);
       setIsAddingFolder(false);
     }
   };
@@ -121,9 +135,9 @@ export default function ProjetosPage() {
                     style={{ backgroundColor: newProjectColor }}
                     aria-label="Mudar cor do projeto"
                   />
-                  <div className="absolute top-6 left-0 hidden group-hover:flex group-focus-within:flex bg-popover border border-border rounded-lg p-1.5 gap-1.5 z-10 shadow-elevated">
+                  <div className="absolute top-8 left-0 hidden group-hover:grid group-focus-within:grid grid-cols-6 bg-popover border border-border rounded-xl p-2.5 gap-1.5 z-50 shadow-elevated w-48">
                     {colors.map(c => (
-                      <button key={c} onClick={() => setNewProjectColor(c)} className="w-4 h-4 rounded-full hover:scale-[1.15] transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50" style={{ backgroundColor: c }} aria-label={`Cor ${c}`} />
+                      <button key={c} onClick={() => setNewProjectColor(c)} className={`w-5 h-5 rounded-full transition-all duration-200 hover:scale-[1.15] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 ${newProjectColor === c ? 'ring-2 ring-foreground ring-offset-2 ring-offset-popover' : ''}`} style={{ backgroundColor: c }} aria-label={`Cor ${c}`} />
                     ))}
                   </div>
                 </div>
@@ -203,7 +217,19 @@ export default function ProjetosPage() {
             {/* Add Folder Inline Input */}
             {isAddingFolder && (
               <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden p-4 flex items-center gap-3">
-                <FolderOpen className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="flex items-center gap-1 mr-2 relative group">
+                  <button
+                    type="button"
+                    className="h-4 w-4 rounded-full border border-border cursor-pointer transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
+                    style={{ backgroundColor: newFolderColor }}
+                    aria-label="Mudar cor da pasta"
+                  />
+                  <div className="absolute top-8 left-0 hidden group-hover:grid group-focus-within:grid grid-cols-6 bg-popover border border-border rounded-xl p-2.5 gap-1.5 z-50 shadow-elevated w-48">
+                    {colors.map(c => (
+                      <button key={c} onClick={() => setNewFolderColor(c)} className={`w-5 h-5 rounded-full transition-all duration-200 hover:scale-[1.15] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 ${newFolderColor === c ? 'ring-2 ring-foreground ring-offset-2 ring-offset-popover' : ''}`} style={{ backgroundColor: c }} aria-label={`Cor ${c}`} />
+                    ))}
+                  </div>
+                </div>
                 <input
                   autoFocus
                   type="text"
@@ -352,9 +378,9 @@ export default function ProjetosPage() {
                               style={{ backgroundColor: newProjectColor }}
                               aria-label="Mudar cor do projeto"
                             />
-                            <div className="absolute top-6 left-0 hidden group-hover:flex group-focus-within:flex bg-popover border border-border rounded-lg p-1.5 gap-1.5 z-10 shadow-elevated">
+                            <div className="absolute top-8 left-0 hidden group-hover:grid group-focus-within:grid grid-cols-6 bg-popover border border-border rounded-xl p-2.5 gap-1.5 z-50 shadow-elevated w-48">
                               {colors.map(c => (
-                                <button key={c} onClick={() => setNewProjectColor(c)} className="w-4 h-4 rounded-full hover:scale-[1.15] transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50" style={{ backgroundColor: c }} aria-label={`Cor ${c}`} />
+                                <button key={c} onClick={() => setNewProjectColor(c)} className={`w-5 h-5 rounded-full transition-all duration-200 hover:scale-[1.15] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 ${newProjectColor === c ? 'ring-2 ring-foreground ring-offset-2 ring-offset-popover' : ''}`} style={{ backgroundColor: c }} aria-label={`Cor ${c}`} />
                               ))}
                             </div>
                           </div>
