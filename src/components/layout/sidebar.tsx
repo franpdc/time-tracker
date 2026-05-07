@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon, Clock, Target, Calendar } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useTimerStore";
 import { useTheme } from "@teispace/next-themes";
+import { createClient } from "@/lib/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -145,19 +147,76 @@ export function Sidebar() {
             )}
           </Link>
         ) : (
-          <div className={cn("flex items-center gap-3 rounded-xl", isCollapsed ? "p-0" : "px-2 py-2")}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-glow/30 to-cyan-glow/5 text-sm font-semibold text-cyan-glow">
-              F
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-medium text-foreground truncate">Francisco</span>
-                <span className="text-2xs text-muted-foreground truncate">Logado</span>
-              </div>
-            )}
-          </div>
+          <UserSession isCollapsed={isCollapsed} />
         )}
       </div>
     </aside>
+  );
+}
+
+const supabase = createClient();
+
+function UserSession({ isCollapsed }: { isCollapsed: boolean }) {
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
+
+  if (!user) {
+    return (
+      <Link
+        href="/login"
+        className={cn(
+          "group flex items-center rounded-xl py-2.5 font-medium transition-all duration-300 ease-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50",
+          isCollapsed ? "justify-center px-0 w-12 h-12 mx-auto" : "gap-3 px-3 w-full",
+          "bg-orange-accent/10 text-orange-accent hover:bg-orange-accent/20"
+        )}
+      >
+        <Clock className="h-4 w-4 shrink-0" />
+        {!isCollapsed && <span className="text-sm">Fazer Login</span>}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "px-2")}>
+      <div className={cn("flex items-center gap-3", isCollapsed ? "justify-center" : "")}>
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-accent/30 to-orange-accent/5 text-sm font-semibold text-orange-accent">
+          {user.email?.[0].toUpperCase()}
+        </div>
+        {!isCollapsed && (
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-medium text-foreground truncate">
+              {user.email?.split("@")[0]}
+            </span>
+            <span className="text-2xs text-muted-foreground truncate">Online</span>
+          </div>
+        )}
+      </div>
+      {!isCollapsed && (
+        <button
+          onClick={handleLogout}
+          className="text-start text-xs text-muted-foreground hover:text-red-400 transition-colors px-1"
+        >
+          Sair da conta
+        </button>
+      )}
+    </div>
   );
 }

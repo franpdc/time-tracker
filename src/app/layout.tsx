@@ -3,10 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { getTheme } from "@teispace/next-themes/server";
 import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Sidebar } from "@/components/layout/sidebar";
-import { AppToaster } from "@/components/layout/app-toaster";
-import { TitleManager } from "@/components/layout/title-manager";
+import { AppShell } from "@/components/layout/app-shell";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -40,18 +37,7 @@ export default async function RootLayout({
           disableTransitionOnChange
           initialTheme={initialTheme ?? undefined}
         >
-          <TooltipProvider>
-            <div className="flex h-screen overflow-hidden">
-              <div className="relative h-full z-20">
-                <Sidebar />
-              </div>
-              <main className="flex-1 overflow-y-auto bg-background">
-                {children}
-              </main>
-            </div>
-            <AppToaster />
-            <TitleManager />
-          </TooltipProvider>
+          <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>
     </html>
