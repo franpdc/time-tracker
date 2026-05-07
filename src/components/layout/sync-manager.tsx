@@ -57,31 +57,32 @@ export function SyncManager() {
 
 
       const currentStore = useAppStore.getState();
+      
+      // Start with current state to avoid overwriting with empty arrays on failure
       const newState: any = {
-        folders: [],
-        projects: [],
-        entries: [],
-        auditEntries: [],
-        progressItems: [],
-        activeTimer: null, // Critical: start with null to overwrite local state
-        dailyGoalMinutes: currentStore.dailyGoalMinutes
+        ...currentStore,
+        syncStatus: "synced" // We'll set this at the end
       };
 
       // Profile & Goals
       if (results[0].status === 'fulfilled' && results[0].value.data) {
         const p = results[0].value.data;
         newState.dailyGoalMinutes = p.daily_goal_minutes;
-        newState.activeTimer = p.active_timer || null; // Force null if not in DB
+        newState.activeTimer = p.active_timer || null;
       }
 
       // Folders
       if (results[1].status === 'fulfilled' && results[1].value.data) {
-        newState.folders = results[1].value.data.map((f: any) => ({ id: f.id, name: f.name, isOpen: f.is_open, color: f.color }));
+        newState.folders = results[1].value.data.map((f: any) => ({ 
+          id: f.id, name: f.name, isOpen: f.is_open, color: f.color 
+        }));
       }
 
       // Projects
       if (results[2].status === 'fulfilled' && results[2].value.data) {
-        newState.projects = results[2].value.data.map((p: any) => ({ id: p.id, name: p.name, color: p.color, folderId: p.folder_id }));
+        newState.projects = results[2].value.data.map((p: any) => ({ 
+          id: p.id, name: p.name, color: p.color, folderId: p.folder_id 
+        }));
       }
 
       // Entries
@@ -95,7 +96,9 @@ export function SyncManager() {
 
       // Audit
       if (results[4].status === 'fulfilled' && results[4].value.data) {
-        newState.auditEntries = results[4].value.data.map((a: any) => ({ id: a.id, name: a.name, hoursPerDay: Number(a.hours_per_day), daysPerWeek: Number(a.days_per_week) }));
+        newState.auditEntries = results[4].value.data.map((a: any) => ({ 
+          id: a.id, name: a.name, hoursPerDay: Number(a.hours_per_day), daysPerWeek: Number(a.days_per_week) 
+        }));
       }
 
       // Progress
@@ -108,8 +111,24 @@ export function SyncManager() {
         }));
       }
 
-      // Deep compare to avoid unnecessary state updates (and thus avoid loops)
-      const dataString = JSON.stringify(newState);
+      // Check if ANY part of the sync failed
+      const someFailed = results.some(r => r.status === 'rejected');
+      if (someFailed) {
+        console.warn("Sync:: Some data failed to load, keeping local version for those fields.");
+      }
+
+      // Only update state if data actually changed
+      const compareState = {
+        folders: newState.folders,
+        projects: newState.projects,
+        entries: newState.entries,
+        auditEntries: newState.auditEntries,
+        progressItems: newState.progressItems,
+        activeTimer: newState.activeTimer,
+        dailyGoalMinutes: newState.dailyGoalMinutes
+      };
+      
+      const dataString = JSON.stringify(compareState);
       if (dataString !== lastPulledData.current) {
         lastPulledData.current = dataString;
         useAppStore.setState(newState);
@@ -230,11 +249,32 @@ export function SyncManager() {
 
   // Pull on every navigation (tab change)
   useEffect(() => {
-    if (userIdRef.current && isInitialPullDone.current) {
-      console.log("Sync:: Navigation detected, refreshing data...");
-      pullFromSupabase(userIdRef.current);
-    }
-  }, [pathname, pullFromSupabase]);
+    const refresh = async () => {
+      if (userIdRef.current && isInitialPullDone.current) {
+        const state = useAppStore.getState();
+        const currentStateString = JSON.stringify({
+          folders: state.folders,
+          projects: state.projects,
+          entries: state.entries,
+          auditEntries: state.auditEntries,
+          progressItems: state.progressItems,
+          activeTimer: state.activeTimer,
+          dailyGoalMinutes: state.dailyGoalMinutes
+        });
+
+        // If we have local changes, push them first before pulling
+        if (currentStateString !== lastPulledData.current) {
+          console.log("Sync:: Pending changes detected on navigation, pushing first...");
+          await pushToSupabase(userIdRef.current);
+        }
+
+        console.log("Sync:: Navigation detected, refreshing data...");
+        await pullFromSupabase(userIdRef.current);
+      }
+    };
+    
+    refresh();
+  }, [pathname, pullFromSupabase, pushToSupabase]);
 
   // Debounced push on state changes
   useEffect(() => {
@@ -242,7 +282,7 @@ export function SyncManager() {
 
     const timeout = setTimeout(() => {
       pushToSupabase(userIdRef.current!);
-    }, 5000); // 5s debounce to allow multiple changes to batch
+    }, 2000); // 2s debounce is more responsive
 
     return () => clearTimeout(timeout);
   }, [
