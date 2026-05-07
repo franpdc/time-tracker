@@ -211,7 +211,7 @@ export function SyncManager() {
         })
         .subscribe((status) => {
           console.log(`Sync: Realtime status for user ${user.id}:`, status);
-          if (status === 'SUBSCRIPTION_ERROR') {
+          if (status === 'CHANNEL_ERROR') {
             console.error("Sync: Realtime subscription failed. Check RLS and Replication settings.");
           }
         });
