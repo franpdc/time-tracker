@@ -5,6 +5,7 @@ import { Plus, Target, FolderOpen, X } from "lucide-react";
 import { useAppStore, GoalPeriod } from "@/store/useTimerStore";
 import { ProgressCard } from "@/components/progress/progress-card";
 import { ProgressModal } from "@/components/progress/progress-modal";
+import { GoalForm } from "@/components/progress/goal-form";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -15,7 +16,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function ProgressPage() {
-  const { progressItems, addProgressItem, projects } = useAppStore();
+  const { progressItems, projects } = useAppStore();
   const [mounted, setMounted] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
@@ -25,29 +26,8 @@ export default function ProgressPage() {
   }, []);
 
   const [isAdding, setIsAdding] = useState(false);
-  const [newItemProjectId, setNewItemProjectId] = useState<string | null>(null);
-  const [newItemSessionTarget, setNewItemSessionTarget] = useState(1);
-  const [newItemDurationTarget, setNewItemDurationTarget] = useState<number | null>(null);
-  const [newItemPeriod, setNewItemPeriod] = useState<GoalPeriod>("daily");
-
-  const handleCreate = () => {
-    if (newItemProjectId && newItemSessionTarget > 0) {
-      addProgressItem({
-        projectId: newItemProjectId,
-        period: newItemPeriod,
-        sessionTarget: newItemSessionTarget,
-        durationTargetMinutes: newItemDurationTarget,
-      });
-      setNewItemProjectId(null);
-      setNewItemSessionTarget(1);
-      setNewItemDurationTarget(null);
-      setIsAdding(false);
-      toast.success("Meta de projeto definida!");
-    }
-  };
 
   const selectedItem = (progressItems || []).find(i => i.id === selectedItemId);
-  const selectedProject = (projects || []).find(p => p.id === newItemProjectId);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -82,123 +62,8 @@ export default function ProgressPage() {
             
             {/* Create Inline Form */}
             {isAdding && (
-              <div className="mb-10 p-8 rounded-[2rem] bg-card border border-cyan-glow/20 shadow-glow-cyan/5 animate-in fade-in zoom-in-95 duration-300">
-                <div className="flex justify-between items-center mb-6">
-                   <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                     <Plus className="h-5 w-5 text-cyan-glow" /> Definir Meta para Projeto
-                   </h2>
-                   <button onClick={() => setIsAdding(false)} className="p-2 hover:bg-surface-hover rounded-xl text-muted-foreground transition-colors">
-                     <X className="h-5 w-5" />
-                   </button>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Projeto (Obrigatório)</label>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <div className={cn(
-                            "flex items-center gap-3 w-full h-12 rounded-2xl bg-surface-hover/50 border px-4 text-sm font-semibold hover:border-cyan-glow/30 transition-all cursor-pointer",
-                            !newItemProjectId ? "border-border" : "border-cyan-glow/30"
-                          )}>
-                            {selectedProject ? (
-                              <>
-                                <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: selectedProject.color }} />
-                                <span className="text-foreground">{selectedProject.name}</span>
-                              </>
-                            ) : (
-                              <>
-                                <FolderOpen className="w-4.5 h-4.5 text-muted-foreground/50" />
-                                <span className="text-muted-foreground/50">Selecionar projeto</span>
-                              </>
-                            )}
-                          </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-64 bg-card border-border shadow-elevated">
-                          {(projects || []).length === 0 ? (
-                            <div className="px-4 py-3 text-xs text-muted-foreground text-center">
-                              Crie um projeto primeiro
-                            </div>
-                          ) : (
-                            (projects || []).map(p => (
-                              <DropdownMenuItem key={p.id} onClick={() => setNewItemProjectId(p.id)} className="flex items-center gap-2 focus:bg-accent cursor-pointer">
-                                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
-                                {p.name}
-                              </DropdownMenuItem>
-                            ))
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Meta de Sessões</label>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="number"
-                          value={newItemSessionTarget}
-                          onChange={e => setNewItemSessionTarget(parseInt(e.target.value) || 0)}
-                          className="w-full h-12 rounded-2xl bg-surface-hover/50 border border-border px-4 text-sm font-bold tabular-nums focus:border-cyan-glow/50 outline-none transition-all"
-                        />
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">sessões</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Duração por Sessão (Opcional)</label>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="number"
-                          placeholder="Sem duração mínima"
-                          value={newItemDurationTarget || ""}
-                          onChange={e => setNewItemDurationTarget(e.target.value ? parseInt(e.target.value) : null)}
-                          className="w-full h-12 rounded-2xl bg-surface-hover/50 border border-border px-4 text-sm font-bold tabular-nums focus:border-cyan-glow/50 outline-none transition-all"
-                        />
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">minutos</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Período</label>
-                      <div className="flex gap-2">
-                        {(['daily', 'weekly', 'monthly'] as GoalPeriod[]).map(p => (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => setNewItemPeriod(p)}
-                            className={cn(
-                              "flex-1 h-12 rounded-2xl border text-xs font-bold uppercase tracking-[0.08em] transition-all duration-300 active:scale-[0.96]",
-                              newItemPeriod === p 
-                                ? "bg-cyan-glow text-black border-cyan-glow shadow-glow-cyan/20" 
-                                : "bg-surface-hover/20 border-border/60 text-muted-foreground hover:border-border hover:bg-surface-hover/40"
-                            )}
-                          >
-                            {p === 'daily' ? 'Diário' : p === 'weekly' ? 'Semanal' : 'Mensal'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-10 pt-8 border-t border-border/50 flex justify-end gap-3">
-                  <button 
-                    onClick={() => setIsAdding(false)}
-                    className="px-6 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    onClick={handleCreate}
-                    disabled={newItemSessionTarget <= 0 || !newItemProjectId}
-                    className="px-10 py-2.5 rounded-2xl bg-cyan-glow text-black text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-glow-cyan active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:brightness-100"
-                  >
-                    Salvar Meta
-                  </button>
-                </div>
+              <div className="mb-10">
+                <GoalForm onClose={() => setIsAdding(false)} />
               </div>
             )}
 
