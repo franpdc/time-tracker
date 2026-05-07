@@ -165,7 +165,7 @@ export function SyncManager() {
           id: p.id, user_id: userId, project_id: p.projectId, period: p.period, 
           session_target: p.sessionTarget, duration_target_minutes: p.durationTargetMinutes, 
           behavior_description: p.behaviorDescription, motivations: p.motivations, 
-          session_logs: p.session_logs, created_at: p.createdAt, updated_at: timestamp 
+          session_logs: p.sessionLogs, created_at: p.createdAt, updated_at: timestamp 
         }))),
       ];
 
