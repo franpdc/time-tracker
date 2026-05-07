@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/useTimerStore";
 import { toast } from "sonner";
+import { usePathname } from "next/navigation";
 
 const supabase = createClient();
 
@@ -14,6 +15,8 @@ export function SyncManager() {
   const lastPulledData = useRef<string>("");
   const userIdRef = useRef<string | null>(null);
   const setSyncStatus = useAppStore((state) => state.setSyncStatus);
+  const pathname = usePathname();
+
 
   const pullFromSupabase = useCallback(async (userId: string) => {
     if (isSyncing.current) return;
@@ -195,6 +198,14 @@ export function SyncManager() {
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [pullFromSupabase]);
+
+  // Pull on every navigation (tab change)
+  useEffect(() => {
+    if (userIdRef.current && isInitialPullDone.current) {
+      console.log("Sync:: Navigation detected, refreshing data...");
+      pullFromSupabase(userIdRef.current);
+    }
+  }, [pathname, pullFromSupabase]);
 
   // Debounced push on state changes
   useEffect(() => {
