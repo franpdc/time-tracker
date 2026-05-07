@@ -35,6 +35,25 @@ export function SyncManager() {
         console.error("Sync: Error fetching profile", profileError);
       }
 
+      const isRemoteEmpty = 
+        (!folders || folders.length === 0) && 
+        (!projects || projects.length === 0) && 
+        (!entries || entries.length === 0);
+
+      const hasLocalData = 
+        store.folders.length > 0 || 
+        store.projects.length > 0 || 
+        store.entries.length > 0;
+
+      // If remote is empty but we have local data, it's likely a first-time sync
+      // We should push our local data instead of pulling nothing (which would reset local data)
+      if (isRemoteEmpty && hasLocalData) {
+        console.log("Sync: Remote is empty but local has data. Performing initial push...");
+        await pushToSupabase(userId);
+        isInitialPullDone.current = true;
+        return;
+      }
+
       const newState: Partial<typeof store> = {};
       
       if (profile) {
@@ -44,9 +63,9 @@ export function SyncManager() {
         }
       }
 
-      if (folders) newState.folders = folders.map(f => ({ id: f.id, name: f.name, isOpen: f.is_open, color: f.color }));
-      if (projects) newState.projects = projects.map(p => ({ id: p.id, name: p.name, color: p.color, folderId: p.folder_id }));
-      if (entries) newState.entries = entries.map(e => ({ 
+      if (folders?.length) newState.folders = folders.map(f => ({ id: f.id, name: f.name, isOpen: f.is_open, color: f.color }));
+      if (projects?.length) newState.projects = projects.map(p => ({ id: p.id, name: p.name, color: p.color, folderId: p.folder_id }));
+      if (entries?.length) newState.entries = entries.map(e => ({ 
         id: e.id, 
         taskName: e.task_name, 
         projectId: e.project_id, 
@@ -55,13 +74,13 @@ export function SyncManager() {
         duration: Number(e.duration), 
         source: e.source 
       }));
-      if (auditEntries) newState.auditEntries = auditEntries.map(a => ({ 
+      if (auditEntries?.length) newState.auditEntries = auditEntries.map(a => ({ 
         id: a.id, 
         name: a.name, 
         hoursPerDay: Number(a.hours_per_day), 
         daysPerWeek: Number(a.days_per_week) 
       }));
-      if (progressItems) newState.progressItems = progressItems.map(p => ({
+      if (progressItems?.length) newState.progressItems = progressItems.map(p => ({
         id: p.id,
         projectId: p.project_id,
         period: p.period,
