@@ -57,13 +57,21 @@ export function SyncManager() {
 
 
       const currentStore = useAppStore.getState();
-      const newState: any = {};
+      const newState: any = {
+        folders: [],
+        projects: [],
+        entries: [],
+        auditEntries: [],
+        progressItems: [],
+        activeTimer: null, // Critical: start with null to overwrite local state
+        dailyGoalMinutes: currentStore.dailyGoalMinutes
+      };
 
       // Profile & Goals
       if (results[0].status === 'fulfilled' && results[0].value.data) {
         const p = results[0].value.data;
         newState.dailyGoalMinutes = p.daily_goal_minutes;
-        if (p.active_timer) newState.activeTimer = p.active_timer;
+        newState.activeTimer = p.active_timer || null; // Force null if not in DB
       }
 
       // Folders
@@ -105,6 +113,9 @@ export function SyncManager() {
       if (dataString !== lastPulledData.current) {
         lastPulledData.current = dataString;
         useAppStore.setState(newState);
+        if (isInitialPullDone.current) {
+          toast.success("Dados sincronizados", { duration: 1500 });
+        }
       }
       
       isInitialPullDone.current = true;
