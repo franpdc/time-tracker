@@ -158,15 +158,6 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
           <DialogTitle className="text-lg">
             {isLive ? "Sessão Ativa" : "Editar Sessão"}
           </DialogTitle>
-          {!isLive && (
-            <button
-              onClick={handleDelete}
-              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-              title="Excluir sessão"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          )}
         </DialogHeader>
 
         {isLive && activeTimer && (
@@ -338,21 +329,35 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
             )}
           </div>
 
-          <div className="pt-4 flex justify-end gap-2">
-            <DialogClose render={
+          <div className="pt-4 flex items-center justify-between">
+            <div className="flex items-center">
+              {!isLive && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="p-2 rounded-xl text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+                  title="Excluir sessão"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <DialogClose render={
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-all duration-300 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
+                >
+                  Cancelar
+                </button>
+              } />
               <button
-                type="button"
-                className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-all duration-300 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-cyan-glow text-black text-sm font-bold hover:bg-cyan-glow/90 transition-all duration-200 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-[0_0_16px_rgba(0,245,255,0.2)]"
               >
-                Cancelar
+                Salvar Alterações
               </button>
-            } />
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-cyan-glow text-black text-sm font-bold hover:bg-cyan-glow/90 transition-all duration-200 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-[0_0_16px_rgba(0,245,255,0.2)]"
-            >
-              Salvar Alterações
-            </button>
+            </div>
           </div>
         </form>
       </DialogContent>
