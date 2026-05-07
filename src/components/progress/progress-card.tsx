@@ -12,6 +12,7 @@ interface ProgressCardProps {
 
 export function ProgressCard({ item, onClick }: ProgressCardProps) {
   const calculateProgress = useAppStore((state) => state.calculateProgress);
+  const calculateStreak = useAppStore((state) => state.calculateStreak);
   const projects = useAppStore((state) => state.projects);
   const [stats, setStats] = useState<ProgressStats>({
     sessionsCompleted: 0,
@@ -19,26 +20,31 @@ export function ProgressCard({ item, onClick }: ProgressCardProps) {
     remainingDurationForCurrentGoal: 0,
     isCompleted: false
   });
+  const [streak, setStreak] = useState(0);
 
   const project = (projects || []).find(p => p.id === item.projectId);
 
   useEffect(() => {
-    // Initial calculation
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStats(calculateProgress(item.id));
-    
-    // Refresh periodically for active timers
-    const interval = setInterval(() => {
+    const update = () => {
       setStats(calculateProgress(item.id));
-    }, 1000);
-    
+      setStreak(calculateStreak(item.id));
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [calculateProgress, item.id]);
+  }, [calculateProgress, calculateStreak, item.id]);
 
   const periodLabel = {
     daily: "Diária",
     weekly: "Semanal",
     monthly: "Mensal"
+  }[item.period];
+
+  const streakLabel = {
+    daily: streak === 1 ? "dia" : "dias",
+    weekly: streak === 1 ? "sem" : "sems",
+    monthly: streak === 1 ? "mês" : "meses"
   }[item.period];
 
   const progressPercentage = Math.min((stats.sessionsCompleted / item.sessionTarget) * 100, 100);
@@ -73,9 +79,19 @@ export function ProgressCard({ item, onClick }: ProgressCardProps) {
               {project?.name || "Projeto Excluído"}
             </h3>
           </div>
-          {stats.isCompleted && (
-             <div className="h-1.5 w-1.5 rounded-full bg-green-live animate-live shadow-[0_0_8px_rgba(0,230,118,0.5)]" />
-          )}
+          <div className="flex items-center gap-3">
+            {streak > 0 && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+                <span className="text-[10px] leading-none">🔥</span>
+                <span className="text-[10px] font-bold text-orange-500 tabular-nums">
+                  {streak} {streakLabel}
+                </span>
+              </div>
+            )}
+            {stats.isCompleted && (
+               <div className="h-1.5 w-1.5 rounded-full bg-green-live animate-live shadow-[0_0_8px_rgba(0,230,118,0.5)]" />
+            )}
+          </div>
         </div>
         
         <div className="flex flex-col gap-0.5">

@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { startOfDay, startOfWeek, startOfMonth, endOfDay, endOfWeek, endOfMonth } from "date-fns";
+import { 
+  startOfDay, startOfWeek, startOfMonth, 
+  endOfDay, endOfWeek, endOfMonth,
+  subDays, subWeeks, subMonths 
+} from "date-fns";
 
 export interface Folder {
   id: string;
@@ -124,6 +128,7 @@ interface AppState {
   updateSessionLog: (itemId: string, logId: string, content: string) => void;
   deleteSessionLog: (itemId: string, logId: string) => void;
   calculateProgress: (itemId: string, date?: Date) => ProgressStats;
+  calculateStreak: (itemId: string) => number;
 
   // Sync
   syncStatus: "synced" | "syncing" | "error" | "idle";
@@ -494,6 +499,52 @@ export const useAppStore = create<AppState>()(
           remainingDurationForCurrentGoal: isCompleted ? 0 : remainingDurationForCurrentGoal,
           isCompleted
         };
+      },
+      calculateStreak: (itemId) => {
+        const { calculateProgress, progressItems } = get();
+        const item = progressItems.find((i) => i.id === itemId);
+        if (!item) return 0;
+
+        let streak = 0;
+        const now = new Date();
+        
+        // 1. Check current period
+        const currentStats = calculateProgress(itemId, now);
+        const isCurrentCompleted = currentStats.isCompleted;
+
+        // 2. Look backwards
+        let checkDate = now;
+        
+        // Safety counter to prevent infinite loops
+        let iterations = 0;
+        const maxIterations = 365; // Up to 1 year of streak
+
+        while (iterations < maxIterations) {
+          // Go back one period
+          if (item.period === "daily") {
+            checkDate = subDays(checkDate, 1);
+          } else if (item.period === "weekly") {
+            checkDate = subWeeks(checkDate, 1);
+          } else {
+            checkDate = subMonths(checkDate, 1);
+          }
+
+          const stats = calculateProgress(itemId, checkDate);
+          if (stats.isCompleted) {
+            streak++;
+          } else {
+            // Streak broken in the past
+            break;
+          }
+          iterations++;
+        }
+
+        // Add 1 if the current period is already completed
+        if (isCurrentCompleted) {
+          streak++;
+        }
+
+        return streak;
       },
 
       // Sync

@@ -41,6 +41,7 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
     addMotivation, 
     removeMotivation, 
     calculateProgress,
+    calculateStreak,
     deleteProgressItem,
     addSessionLog,
     updateSessionLog,
@@ -55,6 +56,7 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
     remainingDurationForCurrentGoal: 0,
     isCompleted: false
   });
+  const [streak, setStreak] = useState(0);
 
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
   const [editingLogContent, setEditingLogContent] = useState("");
@@ -62,13 +64,14 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
   const project = (projects || []).find(p => p.id === item.projectId);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStats(calculateProgress(item.id));
-    const interval = setInterval(() => {
+    const update = () => {
       setStats(calculateProgress(item.id));
-    }, 1000);
+      setStreak(calculateStreak(item.id));
+    };
+    update();
+    const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [calculateProgress, item.id]);
+  }, [calculateProgress, calculateStreak, item.id]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -167,6 +170,14 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
                       )}>
                         {project?.name || "Projeto"}
                       </h2>
+                      {streak > 0 && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 ml-2">
+                          <span className="text-xs leading-none">🔥</span>
+                          <span className="text-xs font-bold text-orange-500 tabular-nums">
+                            {streak} {streak === 1 ? (item.period === 'daily' ? 'dia' : item.period === 'weekly' ? 'semana' : 'mês') : (item.period === 'daily' ? 'dias' : item.period === 'weekly' ? 'semanas' : 'meses')}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/70">
                       <Target className="h-4 w-4 text-cyan-glow/60" />
