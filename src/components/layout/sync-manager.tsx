@@ -182,36 +182,81 @@ export function SyncManager() {
 
     const setup = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("Sync: No user found for realtime setup.");
+        return;
+      }
 
+      console.log("Sync: Setting up realtime channel for user", user.id);
       await pullFromSupabase(user.id);
 
       // Subscribe to all changes for this user
-      channel = supabase.channel(`sync:${user.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` }, () => {
+      channel = supabase.channel(`sync_user_${user.id}`)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          filter: `user_id=eq.${user.id}` 
+        }, (payload) => {
+          console.log("Sync: Realtime change detected in user data", payload.table);
           pullFromSupabase(user.id);
         })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, () => {
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'profiles', 
+          filter: `id=eq.${user.id}` 
+        }, (payload) => {
+          console.log("Sync: Realtime change detected in profile", payload.eventType);
           pullFromSupabase(user.id);
         })
-        .subscribe();
+        .subscribe((status) => {
+          console.log(`Sync: Realtime status for user ${user.id}:`, status);
+          if (status === 'SUBSCRIPTION_ERROR') {
+            console.error("Sync: Realtime subscription failed. Check RLS and Replication settings.");
+          }
+        });
     };
 
     setup();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Sync: Auth event", event);
       if (event === "SIGNED_IN" && session?.user) {
         await pullFromSupabase(session.user.id);
+        if (!channel) setup();
       } else if (event === "SIGNED_OUT") {
         isInitialPullDone.current = false;
-        if (channel) supabase.removeChannel(channel);
+        if (channel) {
+          console.log("Sync: Removing realtime channel due to logout");
+          supabase.removeChannel(channel);
+          channel = null;
+        }
       }
     });
 
     return () => {
       subscription.unsubscribe();
-      if (channel) supabase.removeChannel(channel);
+      if (channel) {
+        console.log("Sync: Cleaning up realtime channel");
+        supabase.removeChannel(channel);
+      }
     };
+  }, [pullFromSupabase]);
+
+  // 3. Visibility Change (Re-sync when returning to app)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === "visible") {
+        console.log("Sync: App became visible, checking for updates...");
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await pullFromSupabase(user.id);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [pullFromSupabase]);
 
   // Push Changes (Debounced)
