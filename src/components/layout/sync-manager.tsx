@@ -186,10 +186,10 @@ export function SyncManager() {
       const entryIds = state.entries.map(e => e.id);
 
       const deletionPromises = [
-        supabase.from("folders").delete().eq("user_id", userId).not("id", "in", folderIds.length > 0 ? folderIds : ["00000000-0000-0000-0000-000000000000"]),
-        supabase.from("projects").delete().eq("user_id", userId).not("id", "in", projectIds.length > 0 ? projectIds : ["00000000-0000-0000-0000-000000000000"]),
-        supabase.from("audit_entries").delete().eq("user_id", userId).not("id", "in", auditIds.length > 0 ? auditIds : ["00000000-0000-0000-0000-000000000000"]),
-        supabase.from("progress_items").delete().eq("user_id", userId).not("id", "in", progressIds.length > 0 ? progressIds : ["00000000-0000-0000-0000-000000000000"]),
+        supabase.from("folders").delete().eq("user_id", userId).filter("id", "not.in", `(${folderIds.join(",") || "00000000-0000-0000-0000-000000000000"})`),
+        supabase.from("projects").delete().eq("user_id", userId).filter("id", "not.in", `(${projectIds.join(",") || "00000000-0000-0000-0000-000000000000"})`),
+        supabase.from("audit_entries").delete().eq("user_id", userId).filter("id", "not.in", `(${auditIds.join(",") || "00000000-0000-0000-0000-000000000000"})`),
+        supabase.from("progress_items").delete().eq("user_id", userId).filter("id", "not.in", `(${progressIds.join(",") || "00000000-0000-0000-0000-000000000000"})`),
       ];
 
       if (state.entries.length > 0) {
@@ -199,7 +199,7 @@ export function SyncManager() {
             .delete()
             .eq("user_id", userId)
             .gte("started_at", oldestLocalEntry)
-            .not("id", "in", entryIds.length > 0 ? entryIds : ["00000000-0000-0000-0000-000000000000"])
+            .filter("id", "not.in", `(${entryIds.join(",")})`)
         );
       }
 
