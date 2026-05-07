@@ -62,6 +62,7 @@ export interface ProgressItem {
   period: GoalPeriod;
   sessionTarget: number;
   durationTargetMinutes: number | null;
+  behaviorDescription: string | null;
   createdAt: number;
   motivations: ProgressMotivation[];
   sessionLogs: ProgressSessionLog[];
@@ -113,7 +114,7 @@ interface AppState {
 
   // Progress
   progressItems: ProgressItem[];
-  addProgressItem: (item: Omit<ProgressItem, "id" | "createdAt" | "motivations" | "sessionLogs">) => void;
+  addProgressItem: (item: Omit<ProgressItem, "id" | "createdAt" | "motivations" | "sessionLogs" | "behaviorDescription">) => void;
   updateProgressItem: (id: string, updates: Partial<ProgressItem>) => void;
   deleteProgressItem: (id: string) => void;
   addMotivation: (itemId: string, text: string) => void;
@@ -302,6 +303,7 @@ export const useAppStore = create<AppState>()(
               ...item,
               id: crypto.randomUUID(),
               createdAt: Date.now(),
+              behaviorDescription: null,
               motivations: [],
               sessionLogs: [],
             },

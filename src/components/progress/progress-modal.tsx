@@ -85,9 +85,7 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
     monthly: "por mês"
   }[item.period];
 
-  const displayProgress = item.targetUnit === 'sessions' 
-    ? Math.floor(stats.sessionsCompleted) 
-    : Math.round(stats.sessionsCompleted * 10) / 10;
+  const displayProgress = Math.floor(stats.sessionsCompleted);
 
   // Get relevant sessions for the current period
   const getPeriodRange = () => {

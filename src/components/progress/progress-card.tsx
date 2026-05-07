@@ -1,6 +1,6 @@
 "use client";
 
-import { ProgressItem, useAppStore } from "@/store/useTimerStore";
+import { ProgressItem, useAppStore, ProgressStats } from "@/store/useTimerStore";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -8,14 +8,6 @@ import { useEffect, useState } from "react";
 interface ProgressCardProps {
   item: ProgressItem;
   onClick: () => void;
-}
-
-
-interface ProgressStats {
-  sessionsCompleted: number;
-  totalTrackedDuration: number;
-  remainingDurationForCurrentGoal: number;
-  isCompleted: boolean;
 }
 
 export function ProgressCard({ item, onClick }: ProgressCardProps) {
