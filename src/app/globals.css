@@ -219,6 +219,60 @@
   100% { background-position: 200% 0; }
 }
 
+/* ===== PREMIUM ANIMATIONS & TRANSITIONS ===== */
+@layer base {
+  * {
+    @apply transition-colors duration-300;
+  }
+}
+
+@layer utilities {
+  .transition-premium {
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .animate-spring-in {
+    animation: spring-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .glass-morphism {
+    @apply bg-card/60 backdrop-blur-xl border-white/10;
+  }
+}
+
+@keyframes spring-in {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Smooth Dialog/Modal overrides */
+[data-state="open"].DialogContent {
+  animation: modal-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-state="closed"].DialogContent {
+  animation: modal-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes modal-out {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+}
+
 .animate-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }

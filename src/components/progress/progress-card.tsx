@@ -62,7 +62,7 @@ export function ProgressCard({ item, onClick }: ProgressCardProps) {
     <Card
       onClick={onClick}
       className={cn(
-        "cursor-pointer transition-all duration-300 hover:border-cyan-glow/30 hover:shadow-[0_0_20px_rgba(0,245,255,0.05)] active:scale-[0.98] rounded-2xl border-border/60",
+        "cursor-pointer transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) hover:border-cyan-glow/30 hover:shadow-[0_20px_40px_rgba(0,245,255,0.08)] hover:-translate-y-0.5 active:scale-[0.98] rounded-2xl border-border/60",
         stats.isCompleted && "bg-card/60"
       )}
     >

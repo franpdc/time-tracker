@@ -255,8 +255,11 @@ export default function Home() {
 
               {/* Main Focus Centerpiece */}
               <div className="w-full space-y-4 animate-in fade-in zoom-in-95 duration-500 delay-150">
-                <h2 className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.25em] mb-2 opacity-50">O que estamos focando agora?</h2>
-                <div className="bg-card rounded-[2rem] lg:rounded-[2.5rem] border border-border shadow-elevated p-6 lg:p-10 transition-all duration-500 ease-out focus-within:ring-4 focus-within:ring-cyan-glow/10 focus-within:border-cyan-glow/30 focus-within:shadow-[0_0_40px_rgba(0,245,255,0.08)]">
+                <div className={cn(
+                  "bg-card rounded-[2rem] lg:rounded-[2.5rem] border border-border shadow-elevated p-6 lg:p-10 transition-all duration-700 ease-in-out",
+                  activeTimer ? "scale-[1.03] shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-cyan-glow/20" : "hover:shadow-card-hover",
+                  "focus-within:ring-4 focus-within:ring-cyan-glow/10 focus-within:border-cyan-glow/30"
+                )}>
                   {activeTimer ? (
                     <div className="flex flex-col items-center gap-8">
                       <div className="inline-flex items-center gap-2 rounded-full bg-green-live/10 px-4 py-1.5 border border-green-live/20">
