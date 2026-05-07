@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Home, BarChart3, FolderOpen, Play, Sun, Moon, 
-  Clock, Target, Calendar, Menu, X, LogOut 
+  Clock, Target, Calendar, Menu, X, LogOut, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/useTimerStore";
@@ -60,10 +60,8 @@ export function MobileSidebar() {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border z-40 px-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-accent shadow-[0_0_12px_rgba(255,107,0,0.2)]">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M4 2L12 8L4 14V2Z" fill="#0D0D0D" />
-            </svg>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-glow shadow-[0_0_12px_rgba(0,245,255,0.25)]">
+            <Zap className="h-4 w-4 text-[#0D0D0D]" fill="currentColor" />
           </div>
           <span className="text-lg font-bold tracking-[-0.02em] text-foreground">
             FocusTrack
@@ -96,10 +94,8 @@ export function MobileSidebar() {
       >
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-accent shadow-[0_0_12px_rgba(255,107,0,0.2)]">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M4 2L12 8L4 14V2Z" fill="#0D0D0D" />
-              </svg>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-glow shadow-[0_0_12px_rgba(0,245,255,0.25)]">
+              <Zap className="h-4 w-4 text-[#0D0D0D]" fill="currentColor" />
             </div>
             <span className="text-lg font-bold tracking-[-0.02em]">FocusTrack</span>
           </div>
@@ -167,7 +163,7 @@ export function MobileSidebar() {
             {user ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-orange-accent/20 flex items-center justify-center text-orange-accent font-bold">
+                  <div className="h-10 w-10 rounded-full bg-cyan-glow/20 flex items-center justify-center text-cyan-glow font-bold border border-cyan-glow/30">
                     {user.email?.[0].toUpperCase()}
                   </div>
                   <div className="flex flex-col min-w-0">
@@ -186,7 +182,7 @@ export function MobileSidebar() {
             ) : (
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-orange-accent text-foreground font-bold shadow-glow-orange"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-cyan-glow text-[#0D0D0D] font-bold shadow-[0_0_15px_rgba(0,245,255,0.2)]"
               >
                 <Clock className="h-5 w-5" />
                 <span>Fazer Login</span>

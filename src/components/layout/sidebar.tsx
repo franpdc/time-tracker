@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon, Clock, Target, Calendar } from "lucide-react";
+import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon, Clock, Target, Calendar, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useTimerStore";
 import { useTheme } from "@teispace/next-themes";
@@ -22,8 +22,26 @@ const navigation = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
   const { activeTimer } = useAppStore();
   const { theme, setTheme } = useTheme();
+
+  // Load state on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("sidebar-collapsed");
+    if (saved !== null) {
+      setIsCollapsed(saved === "true");
+    }
+    setMounted(true);
+  }, []);
+
+  // Save state on change
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("sidebar-collapsed", isCollapsed.toString());
+    }
+  }, [isCollapsed, mounted]);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -51,10 +69,8 @@ export function Sidebar() {
 
       {/* Logo */}
       <div className={cn("mb-10 flex items-center gap-2.5", isCollapsed ? "justify-center" : "px-2")}>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-accent shadow-[0_0_16px_rgba(255,107,0,0.25)]">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M4 2L12 8L4 14V2Z" fill="#0D0D0D" />
-          </svg>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-glow shadow-[0_0_16px_rgba(0,245,255,0.3)]">
+          <Zap className="h-5 w-5 text-[#0D0D0D]" fill="currentColor" />
         </div>
         {!isCollapsed && (
           <span className="text-lg font-bold tracking-[-0.02em] text-foreground line-clamp-1">
@@ -185,7 +201,7 @@ function UserSession({ isCollapsed }: { isCollapsed: boolean }) {
         className={cn(
           "group flex items-center rounded-xl py-2.5 font-medium transition-all duration-300 ease-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50",
           isCollapsed ? "justify-center px-0 w-12 h-12 mx-auto" : "gap-3 px-3 w-full",
-          "bg-orange-accent/10 text-orange-accent hover:bg-orange-accent/20"
+          "bg-cyan-glow/10 text-cyan-glow hover:bg-cyan-glow/20"
         )}
       >
         <Clock className="h-4 w-4 shrink-0" />
@@ -197,7 +213,7 @@ function UserSession({ isCollapsed }: { isCollapsed: boolean }) {
   return (
     <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "px-2")}>
       <div className={cn("flex items-center gap-3", isCollapsed ? "justify-center" : "")}>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-accent/30 to-orange-accent/5 text-sm font-semibold text-orange-accent">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-glow/30 to-cyan-glow/5 text-sm font-semibold text-cyan-glow border border-cyan-glow/20">
           {user.email?.[0].toUpperCase()}
         </div>
         {!isCollapsed && (

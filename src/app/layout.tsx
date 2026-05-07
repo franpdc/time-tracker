@@ -14,6 +14,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "FocusTrack",
   description: "Rastreie seu tempo de foco e produtividade",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({
