@@ -273,6 +273,8 @@ export default function Home() {
 
                       <div className="flex flex-col items-center gap-2 w-full">
                         <input
+                          id="task-name-input"
+                          name="taskName"
                           type="text"
                           value={taskName}
                           onChange={e => handleTaskNameChange(e.target.value)}
@@ -354,6 +356,8 @@ export default function Home() {
                     <div className="flex flex-col items-center gap-8 py-4">
                       <div className="relative w-full max-w-lg">
                         <input
+                          id="new-task-input"
+                          name="newTaskName"
                           type="text"
                           value={taskName}
                           onChange={e => { handleTaskNameChange(e.target.value); setShowSuggestions(true); }}

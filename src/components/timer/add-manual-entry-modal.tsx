@@ -137,6 +137,8 @@ export function AddManualEntryModal({
             <div className="flex items-center gap-2 relative">
               <div className="relative flex-1">
                 <input
+                  id="manual-task-name"
+                  name="manualTaskName"
                   type="text"
                   placeholder="Ex: Trabalho, Estudo..."
                   value={taskName}
