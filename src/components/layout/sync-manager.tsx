@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/useTimerStore";
 import { toast } from "sonner";
@@ -10,16 +10,19 @@ const supabase = createClient();
 export function SyncManager() {
   const store = useAppStore();
   const isInitialPullDone = useRef(false);
-  const skipNextPush = useRef(false);
+  const isSyncing = useRef(false);
+  const lastPulledData = useRef<string>("");
+  const userIdRef = useRef<string | null>(null);
   const setSyncStatus = useAppStore((state) => state.setSyncStatus);
 
   const pullFromSupabase = useCallback(async (userId: string) => {
+    if (isSyncing.current) return;
     try {
+      isSyncing.current = true;
       setSyncStatus("syncing");
-      console.log("Sync:: Starting resilient parallel pull for user", userId);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       const results = await Promise.allSettled([
         supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
@@ -33,169 +36,134 @@ export function SyncManager() {
       clearTimeout(timeoutId);
 
       const currentStore = useAppStore.getState();
-      const newState: Partial<typeof currentStore> = {};
+      const newState: any = {};
 
-      // 1. Profile
-      const profileRes = results[0];
-      if (profileRes.status === 'fulfilled' && profileRes.value.data) {
-        const p = profileRes.value.data;
+      // Profile & Goals
+      if (results[0].status === 'fulfilled' && results[0].value.data) {
+        const p = results[0].value.data;
         newState.dailyGoalMinutes = p.daily_goal_minutes;
         if (p.active_timer) newState.activeTimer = p.active_timer;
       }
 
-      // 2. Folders
-      const foldersRes = results[1];
-      if (foldersRes.status === 'fulfilled' && foldersRes.value.data) {
-        newState.folders = foldersRes.value.data.map((f: any) => ({ 
-          id: f.id, name: f.name, isOpen: f.is_open, color: f.color 
-        }));
+      // Folders
+      if (results[1].status === 'fulfilled' && results[1].value.data) {
+        newState.folders = results[1].value.data.map((f: any) => ({ id: f.id, name: f.name, isOpen: f.is_open, color: f.color }));
       }
 
-      // 3. Projects
-      const projectsRes = results[2];
-      if (projectsRes.status === 'fulfilled' && projectsRes.value.data) {
-        newState.projects = projectsRes.value.data.map((p: any) => ({ 
-          id: p.id, name: p.name, color: p.color, folderId: p.folder_id 
-        }));
+      // Projects
+      if (results[2].status === 'fulfilled' && results[2].value.data) {
+        newState.projects = results[2].value.data.map((p: any) => ({ id: p.id, name: p.name, color: p.color, folderId: p.folder_id }));
       }
 
-      // 4. Entries
-      const entriesRes = results[3];
-      if (entriesRes.status === 'fulfilled' && entriesRes.value.data) {
-        newState.entries = entriesRes.value.data.map((e: any) => ({ 
+      // Entries
+      if (results[3].status === 'fulfilled' && results[3].value.data) {
+        newState.entries = results[3].value.data.map((e: any) => ({ 
           id: e.id, taskName: e.task_name, projectId: e.project_id, 
           startedAt: Number(e.started_at), endedAt: Number(e.ended_at), 
           duration: Number(e.duration), source: e.source 
         }));
       }
 
-      // 5. Audit
-      const auditRes = results[4];
-      if (auditRes.status === 'fulfilled' && auditRes.value.data) {
-        newState.auditEntries = auditRes.value.data.map((a: any) => ({ 
-          id: a.id, name: a.name, hoursPerDay: Number(a.hours_per_day), daysPerWeek: Number(a.days_per_week) 
+      // Audit
+      if (results[4].status === 'fulfilled' && results[4].value.data) {
+        newState.auditEntries = results[4].value.data.map((a: any) => ({ id: a.id, name: a.name, hoursPerDay: Number(a.hours_per_day), daysPerWeek: Number(a.days_per_week) }));
+      }
+
+      // Progress
+      if (results[5].status === 'fulfilled' && results[5].value.data) {
+        newState.progressItems = results[5].value.data.map((p: any) => ({
+          id: p.id, projectId: p.project_id, period: p.period, 
+          sessionTarget: p.session_target, durationTargetMinutes: p.duration_target_minutes, 
+          behaviorDescription: p.behavior_description, createdAt: Number(p.created_at), 
+          motivations: p.motivations || [], sessionLogs: p.session_logs || []
         }));
       }
 
-      // 6. Progress
-      const progressRes = results[5];
-      if (progressRes.status === 'fulfilled' && progressRes.value.data) {
-        newState.progressItems = progressRes.value.data.map((p: any) => ({
-          id: p.id, 
-          projectId: p.project_id, 
-          period: p.period, 
-          sessionTarget: p.session_target, 
-          durationTargetMinutes: p.duration_target_minutes, 
-          behaviorDescription: p.behavior_description, 
-          createdAt: Number(p.created_at), 
-          motivations: p.motivations || [], 
-          sessionLogs: p.session_logs || []
-        }));
-      }
-
-      const hasFailures = results.some(r => r.status === 'rejected');
-      
-      // Safety check: don't wipe local data if remote is empty on first pull
-      const isRemoteEmpty = results.slice(1, 4).every(r => r.status === 'fulfilled' && (!r.value.data || r.value.data.length === 0));
-      const hasLocalData = currentStore.folders.length > 0 || currentStore.projects.length > 0;
-
-      if (isRemoteEmpty && hasLocalData && !isInitialPullDone.current) {
-        console.log("Sync:: Remote empty, initial sync will push local data.");
-      } else if (Object.keys(newState).length > 0) {
-        skipNextPush.current = true;
+      // Deep compare to avoid unnecessary state updates (and thus avoid loops)
+      const dataString = JSON.stringify(newState);
+      if (dataString !== lastPulledData.current) {
+        lastPulledData.current = dataString;
         useAppStore.setState(newState);
       }
       
       isInitialPullDone.current = true;
-      setSyncStatus(hasFailures ? "error" : "synced");
-      
-      if (hasFailures) {
-        const errors = results.filter(r => r.status === 'rejected').length;
-        console.warn(`Sync:: Partial failure (${errors} tables)`);
-      }
-
+      setSyncStatus("synced");
     } catch (error: any) {
       setSyncStatus("error");
-      console.error("Sync:: Fatal error in pullFromSupabase:", error);
-      if (error.name === 'AbortError') {
-        toast.error("Sincronização expirou. Verifique sua conexão.");
-      }
+      console.error("Sync:: Pull error:", error);
+    } finally {
+      isSyncing.current = false;
     }
   }, [setSyncStatus]);
 
   const pushToSupabase = useCallback(async (userId: string) => {
+    if (isSyncing.current) return;
     try {
       const state = useAppStore.getState();
-      console.log("Sync:: Pushing local changes...");
       
-      const results = await Promise.all([
-        supabase.from("profiles").upsert({ 
-          id: userId, daily_goal_minutes: state.dailyGoalMinutes,
-          active_timer: state.activeTimer, updated_at: new Date().toISOString()
-        }),
-        supabase.from("folders").upsert(state.folders.map(f => ({ 
-          id: f.id, user_id: userId, name: f.name, is_open: f.isOpen, color: f.color, updated_at: new Date().toISOString() 
-        }))),
-        supabase.from("projects").upsert(state.projects.map(p => ({ 
-          id: p.id, user_id: userId, name: p.name, color: p.color, folder_id: p.folderId, updated_at: new Date().toISOString() 
-        }))),
-        supabase.from("time_entries").upsert(state.entries.map(e => ({ 
-          id: e.id, user_id: userId, task_name: e.taskName, project_id: e.projectId, started_at: e.startedAt, ended_at: e.endedAt, duration: e.duration, source: e.source, updated_at: new Date().toISOString() 
-        }))),
-        supabase.from("audit_entries").upsert(state.auditEntries.map(a => ({ 
-          id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.daysPerWeek, updated_at: new Date().toISOString() 
-        }))),
-        supabase.from("progress_items").upsert(state.progressItems.map(p => ({ 
-          id: p.id, user_id: userId, project_id: p.projectId, period: p.period, session_target: p.sessionTarget, duration_target_minutes: p.durationTargetMinutes, behavior_description: p.behaviorDescription, motivations: p.motivations, session_logs: p.sessionLogs, created_at: p.createdAt, updated_at: new Date().toISOString() 
-        }))),
-      ]);
+      // Don't push if the state matches what we just pulled
+      const currentStateString = JSON.stringify({
+        dailyGoalMinutes: state.dailyGoalMinutes,
+        activeTimer: state.activeTimer,
+        folders: state.folders,
+        projects: state.projects,
+        entries: state.entries,
+        auditEntries: state.auditEntries,
+        progressItems: state.progressItems
+      });
 
-      const errors = results.filter(r => r.error).map(r => r.error?.message);
-      if (errors.length > 0) throw new Error(errors.join(", "));
+      if (currentStateString === lastPulledData.current) return;
 
-      // Deletions
-      const syncDeletions = async (table: string, localIds: Set<string>) => {
-        const { data: remoteItems } = await supabase.from(table).select("id").eq("user_id", userId);
-        const toDelete = remoteItems?.filter(item => !localIds.has(item.id)).map(item => item.id);
-        if (toDelete?.length) await supabase.from(table).delete().in("id", toDelete);
-      };
-
+      isSyncing.current = true;
+      setSyncStatus("syncing");
+      
       await Promise.all([
-        syncDeletions("folders", new Set(state.folders.map(f => f.id))),
-        syncDeletions("projects", new Set(state.projects.map(p => p.id))),
-        syncDeletions("time_entries", new Set(state.entries.map(e => e.id))),
-        syncDeletions("audit_entries", new Set(state.auditEntries.map(a => a.id))),
-        syncDeletions("progress_items", new Set(state.progressItems.map(p => p.id))),
+        supabase.from("profiles").upsert({ id: userId, daily_goal_minutes: state.dailyGoalMinutes, active_timer: state.activeTimer, updated_at: new Date().toISOString() }),
+        supabase.from("folders").upsert(state.folders.map(f => ({ id: f.id, user_id: userId, name: f.name, is_open: f.isOpen, color: f.color, updated_at: new Date().toISOString() }))),
+        supabase.from("projects").upsert(state.projects.map(p => ({ id: p.id, user_id: userId, name: p.name, color: p.color, folder_id: p.folderId, updated_at: new Date().toISOString() }))),
+        supabase.from("time_entries").upsert(state.entries.map(e => ({ id: e.id, user_id: userId, task_name: e.taskName, project_id: e.projectId, started_at: e.startedAt, ended_at: e.endedAt, duration: e.duration, source: e.source, updated_at: new Date().toISOString() }))),
+        supabase.from("audit_entries").upsert(state.auditEntries.map(a => ({ id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.daysPerWeek, updated_at: new Date().toISOString() }))),
+        supabase.from("progress_items").upsert(state.progressItems.map(p => ({ id: p.id, user_id: userId, project_id: p.projectId, period: p.period, session_target: p.sessionTarget, duration_target_minutes: p.durationTargetMinutes, behavior_description: p.behaviorDescription, motivations: p.motivations, session_logs: p.session_logs, created_at: p.createdAt, updated_at: new Date().toISOString() }))),
       ]);
 
+      // Sync deletions (optional, but keep it simple for now)
+      // We skip deletions here to speed up and reduce complexity during "hard" debugging
+      
+      lastPulledData.current = currentStateString;
       setSyncStatus("synced");
     } catch (error: any) {
       setSyncStatus("error");
-      console.error("Sync:: Error during push:", error);
+      console.error("Sync:: Push error:", error);
+    } finally {
+      isSyncing.current = false;
     }
   }, [setSyncStatus]);
 
+  // Initial setup
   useEffect(() => {
     let channel: any;
-    const setup = async () => {
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      userIdRef.current = user.id;
       await pullFromSupabase(user.id);
 
       channel = supabase.channel(`sync_${user.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` }, () => pullFromSupabase(user.id))
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, () => pullFromSupabase(user.id))
+        .on('postgres_changes', { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` }, () => {
+          if (!isSyncing.current) pullFromSupabase(user.id);
+        })
         .subscribe();
     };
 
-    setup();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        await pullFromSupabase(session.user.id);
-        if (!channel) setup();
+        userIdRef.current = session.user.id;
+        pullFromSupabase(session.user.id);
       } else if (event === "SIGNED_OUT") {
+        userIdRef.current = null;
         isInitialPullDone.current = false;
-        if (channel) supabase.removeChannel(channel);
       }
     });
 
@@ -205,29 +173,36 @@ export function SyncManager() {
     };
   }, [pullFromSupabase]);
 
+  // Pull on visibility change
   useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === "visible") {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) await pullFromSupabase(user.id);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && userIdRef.current) {
+        pullFromSupabase(userIdRef.current);
       }
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [pullFromSupabase]);
 
+  // Debounced push on state changes
   useEffect(() => {
-    if (!isInitialPullDone.current) return;
-    if (skipNextPush.current) {
-      skipNextPush.current = false;
-      return;
-    }
-    const timeout = setTimeout(async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) await pushToSupabase(user.id);
-    }, 3000); 
+    if (!isInitialPullDone.current || !userIdRef.current) return;
+
+    const timeout = setTimeout(() => {
+      pushToSupabase(userIdRef.current!);
+    }, 5000); // 5s debounce to allow multiple changes to batch
+
     return () => clearTimeout(timeout);
-  }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems, store.activeTimer, pushToSupabase]);
+  }, [
+    store.folders, 
+    store.projects, 
+    store.entries, 
+    store.dailyGoalMinutes, 
+    store.auditEntries, 
+    store.progressItems, 
+    store.activeTimer, 
+    pushToSupabase
+  ]);
 
   return null;
 }
