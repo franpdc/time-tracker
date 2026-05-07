@@ -29,17 +29,24 @@ export default function ProjetosPage() {
   const [newProjectColor, setNewProjectColor] = useState("#00F5FF");
 
   const colors = [
-    // Neutrals
-    "#64748b", "#6b7280", "#71717a",
-    // Blues
-    "#3b82f6", "#0ea5e9", "#6366f1",
-    // Greens
-    "#10b981", "#22c55e", "#84cc16",
-    // Warm
-    "#f59e0b", "#f97316", "#ef4444",
-    // Accent
-    "#a855f7", "#8b5cf6", "#ec4899",
-    "#f43f5e", "#14b8a6", "#00F5FF"
+    "#2563eb", // Blue
+    "#6366f1", // Indigo
+    "#7c3aed", // Violet
+    "#a855f7", // Purple
+    "#db2777", // Pink
+    "#e11d48", // Rose
+    "#dc2626", // Red
+    "#ea580c", // Orange
+    "#d97706", // Amber
+    "#eab308", // Yellow
+    "#65a30d", // Lime
+    "#16a34a", // Green
+    "#059669", // Emerald
+    "#0d9488", // Teal
+    "#334155", // Dark Slate
+    "#71717a", // Mid Zinc
+    "#a1a1aa", // Silver
+    "#00F5FF"  // Theme Cyan
   ];
 
   const ColorPickerMenu = ({ currentColor, onSelect }: { currentColor: string, onSelect: (color: string) => void }) => (
