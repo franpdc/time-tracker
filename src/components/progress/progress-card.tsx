@@ -10,6 +10,14 @@ interface ProgressCardProps {
   onClick: () => void;
 }
 
+
+interface ProgressStats {
+  sessionsCompleted: number;
+  totalTrackedDuration: number;
+  remainingDurationForCurrentGoal: number;
+  isCompleted: boolean;
+}
+
 export function ProgressCard({ item, onClick }: ProgressCardProps) {
   const calculateProgress = useAppStore((state) => state.calculateProgress);
   const projects = useAppStore((state) => state.projects);
