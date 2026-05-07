@@ -60,8 +60,14 @@ export function CalendarView({
     ? Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i))
     : [currentDate];
 
-  const goBack = () => setCurrentDate(prev => addDays(prev, -7));
-  const goForward = () => setCurrentDate(prev => addDays(prev, 7));
+  const goBack = () => {
+    const amount = viewMode === "daily" ? -1 : -7;
+    setCurrentDate(prev => addDays(prev, amount));
+  };
+  const goForward = () => {
+    const amount = viewMode === "daily" ? 1 : 7;
+    setCurrentDate(prev => addDays(prev, amount));
+  };
 
   // Get current time line
   const now = new Date();
