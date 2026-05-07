@@ -15,17 +15,35 @@ export function SyncManager() {
   const lastPulledData = useRef<string>("");
   const userIdRef = useRef<string | null>(null);
   const setSyncStatus = useAppStore((state) => state.setSyncStatus);
+  const setServerOffset = useAppStore((state) => state.setServerOffset);
   const pathname = usePathname();
 
 
   const pullFromSupabase = useCallback(async (userId: string) => {
     if (isSyncing.current) return;
     try {
-      isSyncing.current = true;
       setSyncStatus("syncing");
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const startLocal = Date.now();
+      const { data: profileData, error: profileError } = await supabase.from("profiles").select("updated_at").limit(1).maybeSingle();
+      const endLocal = Date.now();
+      
+      // Simple clock sync: try to estimate server time
+      // If we had a dedicated RPC it would be better, but we can approximate
+      // using the updated_at or just a fetch if needed.
+      // For now, let's use a simple approach: if we have a profile, updated_at is a good baseline
+      // But better: use a fetch header.
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/?apikey=${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`, { method: 'HEAD' });
+        const serverDateStr = response.headers.get('date');
+        if (serverDateStr) {
+          const serverTime = new Date(serverDateStr).getTime();
+          const localTime = (startLocal + endLocal) / 2;
+          setServerOffset(serverTime - localTime);
+        }
+      } catch (e) {
+        console.warn("Sync:: Could not sync clock offset", e);
+      }
 
       const results = await Promise.allSettled([
         supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
@@ -36,7 +54,6 @@ export function SyncManager() {
         supabase.from("progress_items").select("*").eq("user_id", userId)
       ]);
 
-      clearTimeout(timeoutId);
 
       const currentStore = useAppStore.getState();
       const newState: any = {};

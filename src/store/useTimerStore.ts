@@ -128,6 +128,8 @@ interface AppState {
   // Sync
   syncStatus: "synced" | "syncing" | "error" | "idle";
   setSyncStatus: (status: "synced" | "syncing" | "error" | "idle") => void;
+  serverOffset: number; // offset in ms (serverTime - localTime)
+  setServerOffset: (offset: number) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -183,27 +185,28 @@ export const useAppStore = create<AppState>()(
 
       activeTimer: null,
       startTimer: (taskName, projectId) => {
+        const { serverOffset } = get();
         set({
           activeTimer: {
             id: crypto.randomUUID(),
             taskName,
             projectId,
-            startedAt: Date.now(),
+            startedAt: Date.now() + serverOffset,
           },
         });
       },
       pauseTimer: () => {
-        const { activeTimer } = get();
+        const { activeTimer, serverOffset } = get();
         if (activeTimer && !activeTimer.pausedAt) {
           set({
-            activeTimer: { ...activeTimer, pausedAt: Date.now() },
+            activeTimer: { ...activeTimer, pausedAt: Date.now() + serverOffset },
           });
         }
       },
       resumeTimer: () => {
-        const { activeTimer } = get();
+        const { activeTimer, serverOffset } = get();
         if (activeTimer && activeTimer.pausedAt) {
-          const pauseDuration = Date.now() - activeTimer.pausedAt;
+          const pauseDuration = (Date.now() + serverOffset) - activeTimer.pausedAt;
           set({
             activeTimer: {
               ...activeTimer,
@@ -214,9 +217,9 @@ export const useAppStore = create<AppState>()(
         }
       },
       stopTimer: () => {
-        const { activeTimer, entries } = get();
+        const { activeTimer, entries, serverOffset } = get();
         if (activeTimer) {
-          const endedAt = activeTimer.pausedAt || Date.now();
+          const endedAt = activeTimer.pausedAt || (Date.now() + serverOffset);
           const duration = Math.floor((endedAt - activeTimer.startedAt) / 1000);
           
           const newEntry: TimeEntry = {
@@ -300,13 +303,14 @@ export const useAppStore = create<AppState>()(
       // Progress
       progressItems: [],
       addProgressItem: (item) => {
+        const { serverOffset } = get();
         set((state) => ({
           progressItems: [
             ...state.progressItems,
             {
               ...item,
               id: crypto.randomUUID(),
-              createdAt: Date.now(),
+              createdAt: Date.now() + serverOffset,
               behaviorDescription: null,
               motivations: [],
               sessionLogs: [],
@@ -368,6 +372,7 @@ export const useAppStore = create<AppState>()(
         }));
       },
       addSessionLog: (itemId, sessionId, content) => {
+        const { serverOffset } = get();
         set((state) => ({
           progressItems: state.progressItems.map((item) =>
             item.id === itemId
@@ -380,7 +385,7 @@ export const useAppStore = create<AppState>()(
                       progressTrackerId: itemId,
                       linkedSessionId: sessionId,
                       content,
-                      createdAt: Date.now(),
+                      createdAt: Date.now() + serverOffset,
                     },
                   ],
                 }
@@ -440,7 +445,7 @@ export const useAppStore = create<AppState>()(
         let totalTrackedDuration = projectSessions.reduce((acc, e) => acc + e.duration, 0);
 
         // Add current active timer if it's for this project AND in the range
-        const now = Date.now();
+        const now = Date.now() + state.serverOffset;
         if (
           state.activeTimer &&
           state.activeTimer.projectId === item.projectId &&
@@ -494,6 +499,8 @@ export const useAppStore = create<AppState>()(
       // Sync
       syncStatus: "idle",
       setSyncStatus: (status) => set({ syncStatus: status }),
+      serverOffset: 0,
+      setServerOffset: (offset) => set({ serverOffset: offset }),
     }),
     {
       name: "time-tracker-storage",

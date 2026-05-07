@@ -21,7 +21,7 @@ import {
 export default function Home() {
   const {
     activeTimer, startTimer, stopTimer, updateTimer, pauseTimer, resumeTimer,
-    projects, entries, dailyGoalMinutes, setDailyGoal,
+    projects, entries, dailyGoalMinutes, setDailyGoal, serverOffset
   } = useAppStore();
 
   const [mounted, setMounted] = useState(false);
@@ -51,9 +51,11 @@ export default function Home() {
   useEffect(() => {
     if (activeTimer) {
       const update = () => {
-        const endedAt = activeTimer.pausedAt || Date.now();
+        const now = Date.now() + serverOffset;
+        const endedAt = activeTimer.pausedAt || now;
         setElapsed(Math.max(0, Math.floor((endedAt - activeTimer.startedAt) / 1000)));
       };
+      update();
       const timeout = setTimeout(update, 0);
       let interval: NodeJS.Timeout | undefined;
       if (!activeTimer.pausedAt) {

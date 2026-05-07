@@ -145,7 +145,7 @@ interface BreakdownItem {
 
 
 export default function OverviewPage() {
-  const { entries, projects, deleteEntry, startTimer, activeTimer } = useAppStore();
+  const { entries, projects, deleteEntry, startTimer, activeTimer, serverOffset } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("hoje");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -162,7 +162,8 @@ export default function OverviewPage() {
   React.useEffect(() => {
     if (activeTimer) {
       const update = () => {
-        const endedAt = activeTimer.pausedAt || Date.now();
+        const now = Date.now() + serverOffset;
+        const endedAt = activeTimer.pausedAt || now;
         setActiveElapsed(Math.max(0, Math.floor((endedAt - activeTimer.startedAt) / 1000)));
       };
       update();
