@@ -34,7 +34,6 @@ export function GoalForm({ onClose, editItem }: GoalFormProps) {
           sessionTarget,
           durationTargetMinutes: durationTarget,
         });
-        toast.success("Meta atualizada!");
       } else {
         addProgressItem({
           projectId,
@@ -42,7 +41,6 @@ export function GoalForm({ onClose, editItem }: GoalFormProps) {
           sessionTarget,
           durationTargetMinutes: durationTarget,
         });
-        toast.success("Meta de projeto definida!");
       }
       onClose();
     }

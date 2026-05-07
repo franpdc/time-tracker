@@ -112,7 +112,6 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
           projectId,
           startedAt,
         });
-        toast.success("Sessão atualizada");
         onOpenChange(false);
       } else if (entry) {
         // Save edits to past entry
@@ -133,7 +132,6 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
           duration,
         });
 
-        toast.success("Sessão atualizada");
         onOpenChange(false);
       }
     } catch (err) {
@@ -142,17 +140,13 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
   };
 
   const handleStop = () => {
-    const savedEntry = stopTimer();
-    if (savedEntry) {
-      toast.success(`Sessão de ${formatDuration(savedEntry.duration)} gravada`);
-    }
+    stopTimer();
     onOpenChange(false);
   };
 
   const handleDelete = () => {
-    if (entry && confirm("Excluir esta sessão de foco?")) {
+    if (entry) {
       deleteEntry(entry.id);
-      toast.success("Sessão excluída");
       onOpenChange(false);
     }
   };

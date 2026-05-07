@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/useTimerStore";
 import { toast } from "sonner";
-import { usePathname } from "next/navigation";
 
 const supabase = createClient();
 
@@ -16,30 +15,23 @@ export function SyncManager() {
   const userIdRef = useRef<string | null>(null);
   const setSyncStatus = useAppStore((state) => state.setSyncStatus);
   const setServerOffset = useAppStore((state) => state.setServerOffset);
-  const pathname = usePathname();
-
 
   const pullFromSupabase = useCallback(async (userId: string) => {
     if (isSyncing.current) return;
+    
     try {
       setSyncStatus("syncing");
+      isSyncing.current = true;
       
       const startLocal = Date.now();
-      const { data: profileData, error: profileError } = await supabase.from("profiles").select("updated_at").limit(1).maybeSingle();
-      const endLocal = Date.now();
       
-      // Simple clock sync: try to estimate server time
-      // If we had a dedicated RPC it would be better, but we can approximate
-      // using the updated_at or just a fetch if needed.
-      // For now, let's use a simple approach: if we have a profile, updated_at is a good baseline
-      // But better: use a fetch header.
+      // Clock sync
       try {
-        // Fetch from our own origin to avoid 401/CORS issues with Supabase REST root
         const response = await fetch(window.location.origin, { method: 'HEAD' });
         const serverDateStr = response.headers.get('date');
         if (serverDateStr) {
           const serverTime = new Date(serverDateStr).getTime();
-          const localTime = (startLocal + endLocal) / 2;
+          const localTime = (Date.now() + startLocal) / 2;
           setServerOffset(serverTime - localTime);
         }
       } catch (e) {
@@ -55,38 +47,37 @@ export function SyncManager() {
         supabase.from("progress_items").select("*").eq("user_id", userId)
       ]);
 
-
       const currentStore = useAppStore.getState();
-      
-      // Start with current state to avoid overwriting with empty arrays on failure
-      const newState: any = {
-        ...currentStore,
-        syncStatus: "synced" // We'll set this at the end
-      };
+      const newState: any = { ...currentStore };
+
+      // Helper to check for errors in settled promises
+      const hasError = (result: any) => result.status === 'rejected' || (result.status === 'fulfilled' && result.value.error);
 
       // Profile & Goals
-      if (results[0].status === 'fulfilled' && results[0].value.data) {
+      if (results[0].status === 'fulfilled' && !results[0].value.error) {
         const p = results[0].value.data;
-        newState.dailyGoalMinutes = p.daily_goal_minutes;
-        newState.activeTimer = p.active_timer || null;
+        if (p) {
+          newState.dailyGoalMinutes = p.daily_goal_minutes;
+          newState.activeTimer = p.active_timer || null;
+        }
       }
 
       // Folders
-      if (results[1].status === 'fulfilled' && results[1].value.data) {
+      if (results[1].status === 'fulfilled' && !results[1].value.error && results[1].value.data) {
         newState.folders = results[1].value.data.map((f: any) => ({ 
           id: f.id, name: f.name, isOpen: f.is_open, color: f.color 
         }));
       }
 
       // Projects
-      if (results[2].status === 'fulfilled' && results[2].value.data) {
+      if (results[2].status === 'fulfilled' && !results[2].value.error && results[2].value.data) {
         newState.projects = results[2].value.data.map((p: any) => ({ 
           id: p.id, name: p.name, color: p.color, folderId: p.folder_id 
         }));
       }
 
       // Entries
-      if (results[3].status === 'fulfilled' && results[3].value.data) {
+      if (results[3].status === 'fulfilled' && !results[3].value.error && results[3].value.data) {
         newState.entries = results[3].value.data.map((e: any) => ({ 
           id: e.id, taskName: e.task_name, projectId: e.project_id, 
           startedAt: Number(e.started_at), endedAt: Number(e.ended_at), 
@@ -95,14 +86,14 @@ export function SyncManager() {
       }
 
       // Audit
-      if (results[4].status === 'fulfilled' && results[4].value.data) {
+      if (results[4].status === 'fulfilled' && !results[4].value.error && results[4].value.data) {
         newState.auditEntries = results[4].value.data.map((a: any) => ({ 
           id: a.id, name: a.name, hoursPerDay: Number(a.hours_per_day), daysPerWeek: Number(a.days_per_week) 
         }));
       }
 
       // Progress
-      if (results[5].status === 'fulfilled' && results[5].value.data) {
+      if (results[5].status === 'fulfilled' && !results[5].value.error && results[5].value.data) {
         newState.progressItems = results[5].value.data.map((p: any) => ({
           id: p.id, projectId: p.project_id, period: p.period, 
           sessionTarget: p.session_target, durationTargetMinutes: p.duration_target_minutes, 
@@ -111,13 +102,6 @@ export function SyncManager() {
         }));
       }
 
-      // Check if ANY part of the sync failed
-      const someFailed = results.some(r => r.status === 'rejected');
-      if (someFailed) {
-        console.warn("Sync:: Some data failed to load, keeping local version for those fields.");
-      }
-
-      // Only update state if data actually changed
       const compareState = {
         folders: newState.folders,
         projects: newState.projects,
@@ -129,12 +113,12 @@ export function SyncManager() {
       };
       
       const dataString = JSON.stringify(compareState);
-      if (dataString !== lastPulledData.current) {
+      
+      // Update state only if it changed and we are not overwriting local changes
+      // (Wait, on first pull we ALWAYS overwrite local to match server truth)
+      if (!isInitialPullDone.current || dataString !== lastPulledData.current) {
         lastPulledData.current = dataString;
         useAppStore.setState(newState);
-        if (isInitialPullDone.current) {
-          toast.success("Dados sincronizados", { duration: 1500 });
-        }
       }
       
       isInitialPullDone.current = true;
@@ -145,88 +129,143 @@ export function SyncManager() {
     } finally {
       isSyncing.current = false;
     }
-  }, [setSyncStatus]);
+  }, [setSyncStatus, setServerOffset]);
 
   const pushToSupabase = useCallback(async (userId: string) => {
     if (isSyncing.current) return;
     try {
       const state = useAppStore.getState();
       
-      // Don't push if the state matches what we just pulled
-      const currentStateString = JSON.stringify({
-        dailyGoalMinutes: state.dailyGoalMinutes,
-        activeTimer: state.activeTimer,
+      const currentState = {
         folders: state.folders,
         projects: state.projects,
         entries: state.entries,
         auditEntries: state.auditEntries,
-        progressItems: state.progressItems
-      });
+        progressItems: state.progressItems,
+        activeTimer: state.activeTimer,
+        dailyGoalMinutes: state.dailyGoalMinutes
+      };
+      const currentStateString = JSON.stringify(currentState);
 
       if (currentStateString === lastPulledData.current) return;
 
       isSyncing.current = true;
       setSyncStatus("syncing");
       
-      await Promise.all([
-        supabase.from("profiles").upsert({ id: userId, daily_goal_minutes: state.dailyGoalMinutes, active_timer: state.activeTimer, updated_at: new Date().toISOString() }),
-        supabase.from("folders").upsert(state.folders.map(f => ({ id: f.id, user_id: userId, name: f.name, is_open: f.isOpen, color: f.color, updated_at: new Date().toISOString() }))),
-        supabase.from("projects").upsert(state.projects.map(p => ({ id: p.id, user_id: userId, name: p.name, color: p.color, folder_id: p.folderId, updated_at: new Date().toISOString() }))),
-        supabase.from("time_entries").upsert(state.entries.map(e => ({ id: e.id, user_id: userId, task_name: e.taskName, project_id: e.projectId, started_at: e.startedAt, ended_at: e.endedAt, duration: e.duration, source: e.source, updated_at: new Date().toISOString() }))),
-        supabase.from("audit_entries").upsert(state.auditEntries.map(a => ({ id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.daysPerWeek, updated_at: new Date().toISOString() }))),
-        supabase.from("progress_items").upsert(state.progressItems.map(p => ({ 
-          id: p.id, 
-          user_id: userId, 
-          project_id: p.projectId, 
-          period: p.period, 
-          session_target: p.sessionTarget, 
-          duration_target_minutes: p.durationTargetMinutes, 
-          behavior_description: p.behaviorDescription, 
-          motivations: p.motivations, 
-          session_logs: p.sessionLogs, 
-          created_at: p.createdAt, 
-          updated_at: new Date().toISOString() 
-        }))),
-      ]);
+      const timestamp = new Date().toISOString();
 
-      // Sync deletions (optional, but keep it simple for now)
-      // We skip deletions here to speed up and reduce complexity during "hard" debugging
+      // 1. Perform UPSERTS
+      const pushPromises = [
+        supabase.from("profiles").upsert({ id: userId, daily_goal_minutes: state.dailyGoalMinutes, active_timer: state.activeTimer, updated_at: timestamp }),
+        supabase.from("folders").upsert(state.folders.map(f => ({ id: f.id, user_id: userId, name: f.name, is_open: f.isOpen, color: f.color, updated_at: timestamp }))),
+        supabase.from("projects").upsert(state.projects.map(p => ({ id: p.id, user_id: userId, name: p.name, color: p.color, folder_id: p.folderId, updated_at: timestamp }))),
+        supabase.from("time_entries").upsert(state.entries.map(e => ({ id: e.id, user_id: userId, task_name: e.taskName, project_id: e.projectId, started_at: e.startedAt, ended_at: e.endedAt, duration: e.duration, source: e.source, updated_at: timestamp }))),
+        supabase.from("audit_entries").upsert(state.auditEntries.map(a => ({ id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.daysPerWeek, updated_at: timestamp }))),
+        supabase.from("progress_items").upsert(state.progressItems.map(p => ({ 
+          id: p.id, user_id: userId, project_id: p.projectId, period: p.period, 
+          session_target: p.sessionTarget, duration_target_minutes: p.durationTargetMinutes, 
+          behavior_description: p.behaviorDescription, motivations: p.motivations, 
+          session_logs: p.session_logs, created_at: p.createdAt, updated_at: timestamp 
+        }))),
+      ];
+
+      const results = await Promise.all(pushPromises);
+      const firstError = results.find(r => r.error);
+      if (firstError) {
+        console.error("Sync:: Upsert error:", firstError.error);
+        throw firstError.error;
+      }
+
+      // 2. Perform DELETIONS
+      // We safely delete items that are NOT in the local state.
+      // For time_entries, we only delete those within the range of what we have locally to avoid wiping history.
+      const folderIds = state.folders.map(f => f.id);
+      const projectIds = state.projects.map(p => p.id);
+      const auditIds = state.auditEntries.map(a => a.id);
+      const progressIds = state.progressItems.map(p => p.id);
+      const entryIds = state.entries.map(e => e.id);
+
+      const deletionPromises = [
+        supabase.from("folders").delete().eq("user_id", userId).not("id", "in", folderIds.length > 0 ? folderIds : ["00000000-0000-0000-0000-000000000000"]),
+        supabase.from("projects").delete().eq("user_id", userId).not("id", "in", projectIds.length > 0 ? projectIds : ["00000000-0000-0000-0000-000000000000"]),
+        supabase.from("audit_entries").delete().eq("user_id", userId).not("id", "in", auditIds.length > 0 ? auditIds : ["00000000-0000-0000-0000-000000000000"]),
+        supabase.from("progress_items").delete().eq("user_id", userId).not("id", "in", progressIds.length > 0 ? progressIds : ["00000000-0000-0000-0000-000000000000"]),
+      ];
+
+      if (state.entries.length > 0) {
+        const oldestLocalEntry = Math.min(...state.entries.map(e => e.startedAt));
+        deletionPromises.push(
+          supabase.from("time_entries")
+            .delete()
+            .eq("user_id", userId)
+            .gte("started_at", oldestLocalEntry)
+            .not("id", "in", entryIds.length > 0 ? entryIds : ["00000000-0000-0000-0000-000000000000"])
+        );
+      }
+
+      const delResults = await Promise.all(deletionPromises);
+      const firstDelError = delResults.find(r => r.error);
+      if (firstDelError) {
+        console.warn("Sync:: Deletion error (ignoring for main sync status):", firstDelError.error);
+      }
       
       lastPulledData.current = currentStateString;
       setSyncStatus("synced");
     } catch (error: any) {
       setSyncStatus("error");
       console.error("Sync:: Push error:", error);
+      toast.error("Erro ao salvar alterações no servidor.");
     } finally {
       isSyncing.current = false;
     }
   }, [setSyncStatus]);
 
-  // Initial setup
+  // Initial setup and Auth change
   useEffect(() => {
     let channel: any;
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      userIdRef.current = user.id;
-      await pullFromSupabase(user.id);
-
-      channel = supabase.channel(`sync_${user.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` }, () => {
-          if (!isSyncing.current) pullFromSupabase(user.id);
+    
+    const setupRealtime = (userId: string) => {
+      if (channel) supabase.removeChannel(channel);
+      
+      channel = supabase.channel(`sync_${userId}`)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          filter: `user_id=eq.${userId}` 
+        }, (payload) => {
+          console.log("Sync:: Real-time change detected:", payload.eventType);
+          // Only pull if we are not the ones who just pushed
+          // (Small delay to allow our own push to update lastPulledData)
+          setTimeout(() => {
+            if (!isSyncing.current) pullFromSupabase(userId);
+          }, 100);
         })
         .subscribe();
+    };
+
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        userIdRef.current = user.id;
+        await pullFromSupabase(user.id);
+        setupRealtime(user.id);
+      }
     };
 
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        userIdRef.current = session.user.id;
-        pullFromSupabase(session.user.id);
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
+        if (userIdRef.current !== session.user.id) {
+          userIdRef.current = session.user.id;
+          isInitialPullDone.current = false;
+          pullFromSupabase(session.user.id);
+          setupRealtime(session.user.id);
+        }
       } else if (event === "SIGNED_OUT") {
         userIdRef.current = null;
         isInitialPullDone.current = false;
+        if (channel) supabase.removeChannel(channel);
       }
     });
 
@@ -247,53 +286,18 @@ export function SyncManager() {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [pullFromSupabase]);
 
-  // Pull on every navigation (tab change)
-  useEffect(() => {
-    const refresh = async () => {
-      if (userIdRef.current && isInitialPullDone.current) {
-        const state = useAppStore.getState();
-        const currentStateString = JSON.stringify({
-          folders: state.folders,
-          projects: state.projects,
-          entries: state.entries,
-          auditEntries: state.auditEntries,
-          progressItems: state.progressItems,
-          activeTimer: state.activeTimer,
-          dailyGoalMinutes: state.dailyGoalMinutes
-        });
-
-        // If we have local changes, push them first before pulling
-        if (currentStateString !== lastPulledData.current) {
-          console.log("Sync:: Pending changes detected on navigation, pushing first...");
-          await pushToSupabase(userIdRef.current);
-        }
-
-        console.log("Sync:: Navigation detected, refreshing data...");
-        await pullFromSupabase(userIdRef.current);
-      }
-    };
-    
-    refresh();
-  }, [pathname, pullFromSupabase, pushToSupabase]);
-
   // Debounced push on state changes
   useEffect(() => {
     if (!isInitialPullDone.current || !userIdRef.current) return;
 
     const timeout = setTimeout(() => {
       pushToSupabase(userIdRef.current!);
-    }, 2000); // 2s debounce is more responsive
+    }, 2000);
 
     return () => clearTimeout(timeout);
   }, [
-    store.folders, 
-    store.projects, 
-    store.entries, 
-    store.dailyGoalMinutes, 
-    store.auditEntries, 
-    store.progressItems, 
-    store.activeTimer, 
-    pushToSupabase
+    store.folders, store.projects, store.entries, store.dailyGoalMinutes, 
+    store.auditEntries, store.progressItems, store.activeTimer, pushToSupabase
   ]);
 
   return null;

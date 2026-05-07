@@ -102,9 +102,6 @@ export function AddManualEntryModal({
         source: "manual",
       });
 
-      toast.success(`Sessão de ${formatDuration(duration)} adicionada`, {
-        description: taskName.trim() || "Foco manual",
-      });
       
       setTaskName("");
       setProjectId(null);

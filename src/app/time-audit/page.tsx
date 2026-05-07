@@ -49,11 +49,9 @@ export default function TimeAuditPage() {
 
     if (editingId) {
       updateAuditEntry(editingId, { name, hoursPerDay: hpd, daysPerWeek: dpw });
-      toast.success("Atividade atualizada");
       setEditingId(null);
     } else {
       addAuditEntry(name, hpd, dpw);
-      toast.success("Atividade adicionada");
     }
 
     setName("");
@@ -251,7 +249,6 @@ export default function TimeAuditPage() {
                         <button 
                           onClick={() => {
                             deleteAuditEntry(entry.id);
-                            toast.success("Atividade removida");
                           }}
                           className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                           title="Excluir"

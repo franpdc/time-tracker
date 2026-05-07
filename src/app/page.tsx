@@ -93,11 +93,6 @@ export default function Home() {
 
   const handleStop = useCallback(() => {
     const entry = stopTimer();
-    if (entry) {
-      toast.success(`Sessão de ${formatDuration(entry.duration)} gravada`, {
-        description: entry.taskName,
-      });
-    }
     setTaskName("");
     setProjectId(null);
   }, [stopTimer]);
@@ -152,7 +147,6 @@ export default function Home() {
     const val = parseInt(goalInput);
     if (!isNaN(val) && val > 0) {
       setDailyGoal(val * 60);
-      toast.success(`Meta diária atualizada para ${val}h`);
     }
     setEditingGoal(false);
     setGoalInput("");

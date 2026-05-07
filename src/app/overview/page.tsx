@@ -800,7 +800,6 @@ export default function OverviewPage() {
             <button
               onClick={() => {
                 if (filteredEntries.length === 0) {
-                  toast.error("Nenhuma sessão para exportar");
                   return;
                 }
                 const header = "Data,Hora Início,Hora Fim,Tarefa,Projeto,Duração (min)\n";
@@ -815,7 +814,6 @@ export default function OverviewPage() {
                 a.download = `focustrack-${format(new Date(), "yyyy-MM-dd")}.csv`;
                 a.click();
                 URL.revokeObjectURL(url);
-                toast.success(`${filteredEntries.length} sessões exportadas`);
               }}
               className="flex items-center gap-1.5 text-xs font-medium text-cyan-glow hover:text-cyan-glow/80 transition-colors duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 rounded-md px-2 py-1 -mx-2 -my-1"
             >
@@ -868,7 +866,6 @@ export default function OverviewPage() {
                           <button
                             onClick={() => {
                               startTimer(entry.taskName, entry.projectId);
-                              toast("Timer iniciado", { description: entry.taskName });
                             }}
                             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-transparent text-muted-foreground hover:text-orange-accent hover:bg-orange-accent/10 transition-all duration-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-accent/40"
                             title="Continuar"
@@ -916,10 +913,7 @@ export default function OverviewPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
-                                  if (confirm("Excluir esta sessão de foco?")) {
-                                    deleteEntry(entry.id);
-                                    toast.success("Sessão excluída");
-                                  }
+                                  deleteEntry(entry.id);
                                 }}
                                 className="text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2"
                               >

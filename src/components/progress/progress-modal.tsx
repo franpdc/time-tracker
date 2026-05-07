@@ -363,11 +363,8 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
                   <section className="pt-10 border-t border-border/50 mt-12 pb-2">
                      <button 
                        onClick={() => {
-                         if (confirm("Excluir esta meta de projeto?")) {
-                           deleteProgressItem(item.id);
-                           onOpenChange(false);
-                           toast.error("Meta excluída");
-                         }
+                         deleteProgressItem(item.id);
+                         onOpenChange(false);
                        }}
                        className="flex items-center gap-2 text-[10px] font-bold text-destructive/40 hover:text-destructive transition-colors uppercase tracking-widest"
                      >
