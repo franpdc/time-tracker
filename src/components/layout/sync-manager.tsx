@@ -34,7 +34,13 @@ export function SyncManager() {
       // For now, let's use a simple approach: if we have a profile, updated_at is a good baseline
       // But better: use a fetch header.
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/?apikey=${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`, { method: 'HEAD' });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/`, { 
+          method: 'HEAD',
+          headers: {
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+          }
+        });
         const serverDateStr = response.headers.get('date');
         if (serverDateStr) {
           const serverTime = new Date(serverDateStr).getTime();
