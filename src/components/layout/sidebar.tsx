@@ -226,12 +226,59 @@ function UserSession({ isCollapsed }: { isCollapsed: boolean }) {
         )}
       </div>
       {!isCollapsed && (
-        <button
-          onClick={handleLogout}
-          className="text-start text-xs text-muted-foreground hover:text-red-400 transition-colors px-1"
-        >
-          Sair da conta
-        </button>
+        <div className="mt-1 flex items-center justify-between px-1">
+          <SyncIndicator />
+          <button
+            onClick={handleLogout}
+            className="text-xs text-muted-foreground hover:text-red-400 transition-colors"
+          >
+            Sair da conta
+          </button>
+        </div>
+      )}
+      {isCollapsed && (
+        <div className="mt-2 flex justify-center">
+          <SyncIndicator isCollapsed />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SyncIndicator({ isCollapsed }: { isCollapsed?: boolean }) {
+  const syncStatus = useAppStore((state) => state.syncStatus);
+
+  if (syncStatus === "idle") return null;
+
+  const labels = {
+    syncing: "Sync",
+    synced: "Live",
+    error: "Erro"
+  };
+
+  return (
+    <div 
+      className={cn(
+        "flex items-center transition-all duration-300",
+        isCollapsed ? "justify-center" : "gap-2"
+      )}
+      title={labels[syncStatus as keyof typeof labels] || ""}
+    >
+      <div className={cn(
+        "h-1.5 w-1.5 rounded-full",
+        syncStatus === "syncing" && "bg-cyan-glow animate-pulse",
+        syncStatus === "synced" && "bg-green-500/60",
+        syncStatus === "error" && "bg-red-500 animate-bounce"
+      )} />
+      {!isCollapsed && (
+        <span className={cn(
+          "text-[11px] font-medium transition-colors",
+          syncStatus === "syncing" && "text-cyan-glow/80",
+          syncStatus === "synced" && "text-muted-foreground/60",
+          syncStatus === "error" && "text-red-500/80"
+        )}>
+          {syncStatus === "syncing" ? "Sincronizando" : "Online"}
+        </span>
       )}
     </div>
   );

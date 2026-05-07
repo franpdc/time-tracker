@@ -124,6 +124,10 @@ interface AppState {
   updateSessionLog: (itemId: string, logId: string, content: string) => void;
   deleteSessionLog: (itemId: string, logId: string) => void;
   calculateProgress: (itemId: string, date?: Date) => ProgressStats;
+
+  // Sync
+  syncStatus: "synced" | "syncing" | "error" | "idle";
+  setSyncStatus: (status: "synced" | "syncing" | "error" | "idle") => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -486,6 +490,10 @@ export const useAppStore = create<AppState>()(
           isCompleted
         };
       },
+
+      // Sync
+      syncStatus: "idle",
+      setSyncStatus: (status) => set({ syncStatus: status }),
     }),
     {
       name: "time-tracker-storage",

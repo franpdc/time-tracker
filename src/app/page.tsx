@@ -427,9 +427,6 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                <div className="flex justify-center">
-                   <p className="text-[10px] font-bold text-muted-foreground/20 uppercase tracking-[0.3em]">Espaço para Iniciar / Pausar &nbsp;·&nbsp; Enter para Iniciar</p>
-                </div>
               </div>
 
               {/* Metrics Row - Below Timer */}

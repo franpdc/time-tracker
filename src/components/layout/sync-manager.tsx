@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/useTimerStore";
 import { toast } from "sonner";
 
@@ -12,8 +11,7 @@ export function SyncManager() {
   const store = useAppStore();
   const isInitialPullDone = useRef(false);
   const skipNextPush = useRef(false);
-  const [syncStatus, setSyncStatus] = useState<"synced" | "syncing" | "error" | "idle">("idle");
-  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const setSyncStatus = useAppStore((state) => state.setSyncStatus);
 
   const pullFromSupabase = useCallback(async (userId: string) => {
     try {
@@ -24,12 +22,12 @@ export function SyncManager() {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
       const results = await Promise.allSettled([
-        supabase.from("profiles").select("*").eq("id", userId).maybeSingle().abortSignal(controller.signal),
-        supabase.from("folders").select("*").eq("user_id", userId).abortSignal(controller.signal),
-        supabase.from("projects").select("*").eq("user_id", userId).abortSignal(controller.signal),
-        supabase.from("time_entries").select("*").eq("user_id", userId).order("started_at", { ascending: false }).limit(1000).abortSignal(controller.signal),
-        supabase.from("audit_entries").select("*").eq("user_id", userId).abortSignal(controller.signal),
-        supabase.from("progress_items").select("*").eq("user_id", userId).abortSignal(controller.signal)
+        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+        supabase.from("folders").select("*").eq("user_id", userId),
+        supabase.from("projects").select("*").eq("user_id", userId),
+        supabase.from("time_entries").select("*").eq("user_id", userId).order("started_at", { ascending: false }).limit(1000),
+        supabase.from("audit_entries").select("*").eq("user_id", userId),
+        supabase.from("progress_items").select("*").eq("user_id", userId)
       ]);
 
       clearTimeout(timeoutId);
@@ -83,10 +81,15 @@ export function SyncManager() {
       const progressRes = results[5];
       if (progressRes.status === 'fulfilled' && progressRes.value.data) {
         newState.progressItems = progressRes.value.data.map((p: any) => ({
-          id: p.id, projectId: p.project_id, period: p.period, 
-          sessionTarget: p.session_target, durationTargetMinutes: p.duration_target_minutes, 
-          behaviorDescription: p.behavior_description, createdAt: Number(p.created_at), 
-          motivations: p.motivations || [], sessionLogs: p.session_logs || []
+          id: p.id, 
+          projectId: p.project_id, 
+          period: p.period, 
+          sessionTarget: p.session_target, 
+          durationTargetMinutes: p.duration_target_minutes, 
+          behaviorDescription: p.behavior_description, 
+          createdAt: Number(p.created_at), 
+          motivations: p.motivations || [], 
+          sessionLogs: p.session_logs || []
         }));
       }
 
@@ -105,7 +108,6 @@ export function SyncManager() {
       
       isInitialPullDone.current = true;
       setSyncStatus(hasFailures ? "error" : "synced");
-      setLastSync(new Date());
       
       if (hasFailures) {
         const errors = results.filter(r => r.status === 'rejected').length;
@@ -119,7 +121,7 @@ export function SyncManager() {
         toast.error("Sincronização expirou. Verifique sua conexão.");
       }
     }
-  }, []);
+  }, [setSyncStatus]);
 
   const pushToSupabase = useCallback(async (userId: string) => {
     try {
@@ -167,12 +169,11 @@ export function SyncManager() {
       ]);
 
       setSyncStatus("synced");
-      setLastSync(new Date());
     } catch (error: any) {
       setSyncStatus("error");
       console.error("Sync:: Error during push:", error);
     }
-  }, []);
+  }, [setSyncStatus]);
 
   useEffect(() => {
     let channel: any;
@@ -228,25 +229,5 @@ export function SyncManager() {
     return () => clearTimeout(timeout);
   }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems, store.activeTimer, pushToSupabase]);
 
-  return (
-    <div className="fixed bottom-4 right-4 z-[100] pointer-events-none group">
-      <div className={cn(
-        "px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-500 flex items-center gap-2",
-        syncStatus === "syncing" && "bg-cyan-glow/20 text-cyan-glow animate-pulse opacity-100",
-        syncStatus === "synced" && "bg-green-500/10 text-green-500 opacity-0 group-hover:opacity-100",
-        syncStatus === "error" && "bg-red-500/20 text-red-500 opacity-100",
-        syncStatus === "idle" && "opacity-0"
-      )}>
-        <div className={cn(
-          "h-1.5 w-1.5 rounded-full",
-          syncStatus === "syncing" && "bg-cyan-glow",
-          syncStatus === "synced" && "bg-green-500",
-          syncStatus === "error" && "bg-red-500"
-        )} />
-        {syncStatus === "syncing" && "Sincronizando..."}
-        {syncStatus === "synced" && "Sincronizado"}
-        {syncStatus === "error" && "Falha na sincronização"}
-      </div>
-    </div>
-  );
+  return null;
 }
