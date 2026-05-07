@@ -36,9 +36,9 @@ export function ProgressCard({ item, onClick }: ProgressCardProps) {
   }, [calculateProgress, item.id]);
 
   const periodLabel = {
-    daily: "dia",
-    weekly: "semana",
-    monthly: "mês"
+    daily: "Diária",
+    weekly: "Semanal",
+    monthly: "Mensal"
   }[item.period];
 
   const progressPercentage = Math.min((stats.sessionsCompleted / item.sessionTarget) * 100, 100);
@@ -78,25 +78,34 @@ export function ProgressCard({ item, onClick }: ProgressCardProps) {
           )}
         </div>
         
-        <div className="flex flex-col">
-          <div className="flex items-baseline gap-1.5">
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-baseline gap-2">
             <span className={cn(
-              "text-xl font-bold tabular-nums tracking-tight",
-              stats.isCompleted ? "text-muted-foreground" : "text-cyan-glow"
+              "text-2xl font-bold tabular-nums tracking-tight",
+              stats.isCompleted ? "text-muted-foreground" : "text-foreground"
             )}>
               {Math.floor(stats.sessionsCompleted)}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
-              / {item.sessionTarget} {item.sessionTarget === 1 ? 'sessão' : 'sessões'}
-              {item.durationTargetMinutes ? ` ${item.durationTargetMinutes}min` : ''} / {periodLabel}
+            <span className="text-sm text-muted-foreground/60 font-medium">
+              de {item.sessionTarget} {item.sessionTarget === 1 ? 'sessão' : 'sessões'}
             </span>
           </div>
           
-          {stats.remainingDurationForCurrentGoal > 0 && !stats.isCompleted && (
-            <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider mt-0.5">
-              ({formatRemaining(stats.remainingDurationForCurrentGoal)})
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider leading-none">
+            <span>Meta {periodLabel}</span>
+            {item.durationTargetMinutes && (
+              <>
+                <span className="w-0.5 h-0.5 rounded-full bg-muted-foreground/20" />
+                <span>{item.durationTargetMinutes}min cada</span>
+              </>
+            )}
+            {stats.remainingDurationForCurrentGoal > 0 && !stats.isCompleted && (
+               <>
+                 <span className="w-0.5 h-0.5 rounded-full bg-muted-foreground/20" />
+                 <span className="text-cyan-glow/60">{formatRemaining(stats.remainingDurationForCurrentGoal)}</span>
+               </>
+            )}
+          </div>
         </div>
         
         {/* Progress Bar Container */}
