@@ -394,7 +394,7 @@ export default function OverviewPage() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <header className="flex items-center justify-between px-4 lg:px-8 py-5 border-b border-border">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-[-0.02em]">Overview</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -404,14 +404,14 @@ export default function OverviewPage() {
         <div className="flex items-center gap-4 text-xs text-muted-foreground min-h-[40px]">
           {mounted && (
             <>
-              <span className="tabular-nums">{format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
+              <span className="tabular-nums hidden sm:inline">{format(new Date(), "dd 'de' MMMM, yyyy", { locale: ptBR })}</span>
               <AddManualEntryModal />
             </>
           )}
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-6">
         {!mounted ? (
           <div className="space-y-4">
             <div className="h-10 rounded-xl skeleton" />
@@ -427,13 +427,14 @@ export default function OverviewPage() {
         ) : (
           <>
             {/* View mode tabs */}
-        <div className="flex items-center gap-6 mb-6">
-          <div className="flex items-center gap-1 bg-card rounded-xl p-1 border border-border">
+            {/* View mode tabs */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 lg:gap-6 mb-6">
+          <div className="flex items-center gap-1 bg-card rounded-xl p-1 border border-border w-full sm:w-auto overflow-x-auto no-scrollbar">
             {views.map((v) => (
               <button
                 key={v.key}
                 onClick={() => setViewMode(v.key)}
-                className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 ${
+                className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 whitespace-nowrap active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 ${
                   viewMode === v.key
                     ? "bg-accent text-foreground shadow-card"
                     : "text-muted-foreground/70 hover:text-foreground hover:bg-surface-hover"
@@ -445,7 +446,7 @@ export default function OverviewPage() {
           </div>
 
           {/* Date navigation */}
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto w-full sm:w-auto justify-between sm:justify-end">
             <button
               onClick={goBack}
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-card border border-border text-muted-foreground hover:text-foreground hover:border-cyan-glow/30 transition-all duration-200 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50"
@@ -455,7 +456,7 @@ export default function OverviewPage() {
             </button>
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
               <PopoverTrigger>
-                <div className="text-sm text-muted-foreground min-w-[150px] text-center font-medium capitalize flex items-center justify-center gap-2 hover:text-foreground transition-colors duration-200 cursor-pointer tabular-nums">
+                <div className="text-sm text-muted-foreground min-w-[120px] sm:min-w-[150px] text-center font-medium capitalize flex items-center justify-center gap-2 hover:text-foreground transition-colors duration-200 cursor-pointer tabular-nums">
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {dateLabel}
                 </div>
@@ -475,28 +476,28 @@ export default function OverviewPage() {
         </div>
 
         {/* Toggl-style Stats Row */}
-        <div className="flex w-full items-center justify-between bg-card rounded-2xl border border-border shadow-card p-6 mb-8">
-          <div className="flex flex-col gap-1 w-1/4">
-            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Total de Foco</span>
-            <span className="text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{formatTotal()}</span>
+        <div className="flex flex-col lg:flex-row w-full items-center justify-between bg-card rounded-2xl border border-border shadow-card p-6 mb-8 gap-6 lg:gap-0">
+          <div className="flex flex-col gap-1 w-full lg:w-1/4">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Total de Foco</span>
+            <span className="text-2xl lg:text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{formatTotal()}</span>
             <span className="text-xs text-muted-foreground mt-1">tempo {viewMode === "hoje" ? "hoje" : "no período"}</span>
           </div>
-          <div className="w-px h-16 bg-border mx-6 shrink-0"></div>
-          <div className="flex flex-col gap-1 w-1/4">
-            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Tarefas Focadas</span>
-            <span className="text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{uniqueTasksCount}</span>
+          <div className="hidden lg:block w-px h-16 bg-border mx-6 shrink-0"></div>
+          <div className="flex flex-col gap-1 w-full lg:w-1/4">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Tarefas Focadas</span>
+            <span className="text-2xl lg:text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{uniqueTasksCount}</span>
             <span className="text-xs text-muted-foreground mt-1">tarefas únicas no período</span>
           </div>
-          <div className="w-px h-16 bg-border mx-6 shrink-0"></div>
-          <div className="flex flex-col gap-1 w-1/4">
-            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Área Principal</span>
-            <span className="text-xl font-bold text-foreground tracking-[-0.02em] truncate">{topProjectName}</span>
+          <div className="hidden lg:block w-px h-16 bg-border mx-6 shrink-0"></div>
+          <div className="flex flex-col gap-1 w-full lg:w-1/4">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Área Principal</span>
+            <span className="text-lg lg:text-xl font-bold text-foreground tracking-[-0.02em] truncate">{topProjectName}</span>
             <span className="text-xs text-muted-foreground mt-1">mais focado</span>
           </div>
-          <div className="w-px h-16 bg-border mx-6 shrink-0"></div>
-          <div className="flex flex-col gap-1 w-1/4">
-            <span className="text-2xs font-bold uppercase text-muted-foreground tracking-wider">Sequência</span>
-            <span className="text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{streak} <span className="text-sm font-normal text-muted-foreground/50">dias</span></span>
+          <div className="hidden lg:block w-px h-16 bg-border mx-6 shrink-0"></div>
+          <div className="flex flex-col gap-1 w-full lg:w-1/4">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Sequência</span>
+            <span className="text-2xl lg:text-3xl font-bold text-foreground tracking-[-0.02em] tabular-nums">{streak} <span className="text-sm font-normal text-muted-foreground/50">dias</span></span>
             <p className="text-xs text-green-live/80 mt-1 flex items-center gap-1">
               <span>↑ dias seguidos</span>
             </p>
@@ -504,9 +505,9 @@ export default function OverviewPage() {
         </div>
 
         {/* Charts row */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-4 mb-8">
           {/* Dynamic Bar Chart */}
-          <div className="col-span-2 bg-card rounded-2xl p-6 border border-border shadow-card overflow-x-auto">
+          <div className="col-span-1 lg:col-span-2 bg-card rounded-2xl p-6 border border-border shadow-card overflow-x-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">
@@ -526,7 +527,7 @@ export default function OverviewPage() {
             <div className="flex items-end gap-2" style={{ height: 180 }}>
               {viewMode === "hoje" ? (
                 // Special layout for today (one big column + text next to it)
-                <div className="flex w-full h-full items-center justify-center gap-12">
+                <div className="flex flex-col lg:flex-row w-full h-full items-center justify-center gap-6 lg:gap-12">
                   <div className="flex flex-col items-center justify-end h-full w-32 group relative">
                     {/* Tooltip on hover */}
                     <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col z-10 bg-popover border border-border text-foreground text-2xs p-2.5 rounded-lg shadow-elevated w-max min-w-[140px]">
@@ -564,10 +565,10 @@ export default function OverviewPage() {
                     />
                     <span className="text-sm font-medium text-foreground mt-3 shrink-0">Hoje</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Total acumulado</span>
-                    <span className="text-5xl font-bold text-cyan-glow tabular-nums">{formatTotal()}</span>
-                    <span className="text-sm text-muted-foreground/50 mt-1">horas focadas</span>
+                  <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+                    <span className="text-[10px] lg:text-xs text-muted-foreground uppercase tracking-widest mb-1">Total acumulado</span>
+                    <span className="text-3xl lg:text-5xl font-bold text-cyan-glow tabular-nums">{formatTotal()}</span>
+                    <span className="text-xs lg:text-sm text-muted-foreground/50 mt-1">horas focadas</span>
                   </div>
                 </div>
               ) : (
@@ -822,23 +823,24 @@ export default function OverviewPage() {
             </button>
           </div>
 
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
-                  Último Foco
-                </th>
-                <th className="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
-                  Projeto
-                </th>
-                <th className="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
-                  Tarefa
-                </th>
-                <th className="text-right text-xs font-medium uppercase tracking-wider text-muted-foreground/50 pb-3">
-                  Duração
-                </th>
-              </tr>
-            </thead>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <table className="w-full min-w-[600px] lg:min-w-0">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 pb-3">
+                    Último Foco
+                  </th>
+                  <th className="text-left text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 pb-3">
+                    Projeto
+                  </th>
+                  <th className="text-left text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 pb-3">
+                    Tarefa
+                  </th>
+                  <th className="text-right text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 pb-3">
+                    Duração
+                  </th>
+                </tr>
+              </thead>
             <tbody className="divide-y divide-border/50">
               {filteredEntries.length === 0 ? (
                 <tr>
@@ -942,7 +944,8 @@ export default function OverviewPage() {
                 </tr>
               </tfoot>
             )}
-          </table>
+            </table>
+          </div>
         </div>
 
         {/* Edit Entry Modal — rendered outside the dropdown to avoid nesting conflicts */}

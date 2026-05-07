@@ -32,7 +32,7 @@ export default function ProgressPage() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between px-4 lg:px-8 py-5 border-b border-border gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-[-0.02em]">Progresso</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -42,15 +42,15 @@ export default function ProgressPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 rounded-xl bg-cyan-glow px-4 py-2 text-sm font-bold text-[#0D0D0D] hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-[0_0_16px_rgba(0,245,255,0.2)]"
+            className="flex-1 lg:flex-none flex items-center justify-center gap-2 rounded-xl bg-cyan-glow px-4 py-2 text-sm font-bold text-[#0D0D0D] hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-[0_0_16px_rgba(0,245,255,0.2)]"
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Nova meta de projeto
+            <span className="whitespace-nowrap">Nova meta de projeto</span>
           </button>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-8 py-8">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-6 lg:py-8">
         {!mounted ? (
           <div className="max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="h-32 rounded-2xl skeleton" />

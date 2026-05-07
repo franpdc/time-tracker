@@ -90,7 +90,7 @@ export default function TimeAuditPage() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <header className="flex items-center justify-between px-4 lg:px-8 py-5 border-b border-border">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-[-0.02em]">Time Audit</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -99,7 +99,7 @@ export default function TimeAuditPage() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-6">
         <div className="max-w-[1400px] mx-auto">
           
           {/* Summary Card */}
@@ -112,14 +112,14 @@ export default function TimeAuditPage() {
                     <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Balanço Semanal</h2>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                     <div>
-                      <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-1">Horas Utilizadas</p>
-                      <p className="text-4xl font-bold text-foreground tabular-nums tracking-[-0.02em]">{totalUsed}h <span className="text-sm font-normal text-muted-foreground/40">/ 168h</span></p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Horas Utilizadas</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-foreground tabular-nums tracking-[-0.02em]">{totalUsed}h <span className="text-sm font-normal text-muted-foreground/40">/ 168h</span></p>
                     </div>
                     <div>
-                      <p className="text-2xs text-muted-foreground uppercase tracking-wider mb-1">Horas Disponíveis</p>
-                      <p className="text-4xl font-bold text-cyan-glow tabular-nums tracking-[-0.02em]">{remaining}h</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Horas Disponíveis</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-cyan-glow tabular-nums tracking-[-0.02em]">{remaining}h</p>
                     </div>
                   </div>
                 </div>

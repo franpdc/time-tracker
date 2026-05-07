@@ -90,11 +90,11 @@ export function SyncManager() {
         })),
         
         ...store.auditEntries.map(a => supabase.from("audit_entries").upsert({ 
-          id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.days_per_week, updated_at: new Date().toISOString() 
+          id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.daysPerWeek, updated_at: new Date().toISOString() 
         })),
         
         ...store.progressItems.map(p => supabase.from("progress_items").upsert({ 
-          id: p.id, user_id: userId, project_id: p.projectId, period: p.period, session_target: p.session_target, duration_target_minutes: p.duration_target_minutes, behavior_description: p.behavior_description, motivations: p.motivations, session_logs: p.session_logs, created_at: p.createdAt, updated_at: new Date().toISOString() 
+          id: p.id, user_id: userId, project_id: p.projectId, period: p.period, session_target: p.sessionTarget, duration_target_minutes: p.durationTargetMinutes, behavior_description: p.behaviorDescription, motivations: p.motivations, session_logs: p.sessionLogs, created_at: p.createdAt, updated_at: new Date().toISOString() 
         })),
       ]);
 

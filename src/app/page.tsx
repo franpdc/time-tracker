@@ -167,7 +167,7 @@ export default function Home() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <header className="flex items-center justify-between px-4 lg:px-8 py-5 border-b border-border">
         <div className="flex items-center gap-4">
           {mounted && (
             <p className="text-2xs text-muted-foreground uppercase tracking-[0.14em] font-medium mr-4">
@@ -228,19 +228,19 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-100px)] py-12 px-4 sm:px-8">
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-100px)] py-12 px-4 lg:px-8">
             <div className="w-full max-w-2xl space-y-12">
               
               {/* Daily Goal Progress - Centered & Larger */}
               {goalSeconds > 0 && (
                 <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <div className="flex items-center justify-between mb-3 px-1">
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Progresso do Dia</span>
-                    <span className="text-sm font-bold text-foreground tabular-nums">
+                    <span className="text-[10px] lg:text-xs font-bold text-muted-foreground uppercase tracking-widest">Progresso do Dia</span>
+                    <span className="text-xs lg:text-sm font-bold text-foreground tabular-nums">
                       {formatDuration(todaySeconds)} <span className="text-muted-foreground/40 font-medium">/ {formatDuration(goalSeconds)}</span>
                     </span>
                   </div>
-                  <div className="h-3 bg-card rounded-full overflow-hidden border border-border/50">
+                  <div className="h-2.5 lg:h-3 bg-card rounded-full overflow-hidden border border-border/50">
                     <div
                       className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{
@@ -260,7 +260,7 @@ export default function Home() {
               {/* Main Focus Centerpiece */}
               <div className="w-full space-y-4 animate-in fade-in zoom-in-95 duration-500 delay-150">
                 <h2 className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.25em] mb-2 opacity-50">O que estamos focando agora?</h2>
-                <div className="bg-card rounded-[2.5rem] border border-border shadow-elevated p-10 transition-all duration-500 ease-out focus-within:ring-4 focus-within:ring-cyan-glow/10 focus-within:border-cyan-glow/30 focus-within:shadow-[0_0_40px_rgba(0,245,255,0.08)]">
+                <div className="bg-card rounded-[2rem] lg:rounded-[2.5rem] border border-border shadow-elevated p-6 lg:p-10 transition-all duration-500 ease-out focus-within:ring-4 focus-within:ring-cyan-glow/10 focus-within:border-cyan-glow/30 focus-within:shadow-[0_0_40px_rgba(0,245,255,0.08)]">
                   {activeTimer ? (
                     <div className="flex flex-col items-center gap-8">
                       <div className="inline-flex items-center gap-2 rounded-full bg-green-live/10 px-4 py-1.5 border border-green-live/20">
@@ -277,7 +277,7 @@ export default function Home() {
                           value={taskName}
                           onChange={e => handleTaskNameChange(e.target.value)}
                           placeholder="Nome da tarefa..."
-                          className="w-full bg-transparent text-center text-3xl font-bold tracking-tight text-foreground placeholder:text-muted-foreground/20 border-none outline-none focus:outline-none"
+                          className="w-full bg-transparent text-center text-2xl lg:text-3xl font-bold tracking-tight text-foreground placeholder:text-muted-foreground/20 border-none outline-none focus:outline-none"
                         />
                         <DropdownMenu>
                           <DropdownMenuTrigger>
@@ -314,9 +314,9 @@ export default function Home() {
                           const parts = display.split(":");
                           return parts.map((part, i) => (
                             <React.Fragment key={i}>
-                              <span className="text-8xl md:text-9xl">{part}</span>
+                              <span className="text-6xl lg:text-9xl">{part}</span>
                               {i < parts.length - 1 && (
-                                <span className="text-7xl md:text-8xl text-muted-foreground/20 font-light px-2">:</span>
+                                <span className="text-4xl lg:text-8xl text-muted-foreground/20 font-light px-1 lg:px-2">:</span>
                               )}
                             </React.Fragment>
                           ));
@@ -433,19 +433,19 @@ export default function Home() {
               </div>
 
               {/* Metrics Row - Below Timer */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 delay-300">
-                <div className="bg-card rounded-3xl p-6 border border-border/60 shadow-card transition-all duration-500 hover:border-cyan-glow/30 hover:shadow-glow-cyan/5 group">
-                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-3">Foco Hoje</p>
-                  <p className="text-4xl font-black text-cyan-glow tabular-nums tracking-tighter group-hover:scale-105 transition-transform origin-left">{formatDuration(todaySeconds)}</p>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 delay-300">
+                <div className="bg-card rounded-3xl p-5 lg:p-6 border border-border/60 shadow-card transition-all duration-500 hover:border-cyan-glow/30 hover:shadow-glow-cyan/5 group">
+                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-2 lg:mb-3">Foco Hoje</p>
+                  <p className="text-3xl lg:text-4xl font-black text-cyan-glow tabular-nums tracking-tighter group-hover:scale-105 transition-transform origin-left">{formatDuration(todaySeconds)}</p>
                 </div>
-                <div className="bg-card rounded-3xl p-6 border border-border/60 shadow-card transition-all duration-500 hover:border-cyan-glow/30 hover:shadow-glow-cyan/5 group">
-                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-3">Sessões</p>
-                  <p className="text-4xl font-black text-foreground tabular-nums tracking-tighter group-hover:scale-105 transition-transform origin-left">{todayEntries.length}</p>
+                <div className="bg-card rounded-3xl p-5 lg:p-6 border border-border/60 shadow-card transition-all duration-500 hover:border-cyan-glow/30 hover:shadow-glow-cyan/5 group">
+                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-2 lg:mb-3">Sessões</p>
+                  <p className="text-3xl lg:text-4xl font-black text-foreground tabular-nums tracking-tighter group-hover:scale-105 transition-transform origin-left">{todayEntries.length}</p>
                 </div>
-                <div className="bg-card rounded-3xl p-6 border border-border/60 shadow-card transition-all duration-500 hover:border-cyan-glow/30 hover:shadow-glow-cyan/5 group">
-                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-3">Sequência</p>
-                  <p className="text-4xl font-black text-foreground tabular-nums tracking-tighter group-hover:scale-105 transition-transform origin-left">
-                    {streak} <span className="text-base font-bold text-muted-foreground/30 uppercase tracking-widest ml-1">DIAS</span>
+                <div className="bg-card rounded-3xl p-5 lg:p-6 border border-border/60 shadow-card transition-all duration-500 hover:border-cyan-glow/30 hover:shadow-glow-cyan/5 group">
+                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-2 lg:mb-3">Sequência</p>
+                  <p className="text-3xl lg:text-4xl font-black text-foreground tabular-nums tracking-tighter group-hover:scale-105 transition-transform origin-left">
+                    {streak} <span className="text-sm font-bold text-muted-foreground/30 uppercase tracking-widest ml-1">DIAS</span>
                   </p>
                 </div>
               </div>

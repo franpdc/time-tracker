@@ -93,8 +93,8 @@ export function CalendarView({
 
   return (
     <div className={cn("bg-card border border-border rounded-2xl shadow-premium overflow-hidden flex flex-col h-[70vh] min-h-[600px] transition-all duration-500 ease-in-out", className)}>
-      <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-border bg-surface-hover/50 gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col lg:flex-row items-center justify-between p-4 border-b border-border bg-surface-hover/50 gap-4">
+        <div className="flex items-center justify-between lg:justify-start w-full lg:w-auto gap-2">
           <button
             onClick={goBack}
             className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-accent text-muted-foreground transition-colors"
@@ -114,7 +114,7 @@ export function CalendarView({
           </button>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between lg:justify-end w-full lg:w-auto gap-4">
           <div className="flex items-center bg-background p-1 rounded-lg border border-border">
             <button
               onClick={() => handleViewModeChange("daily")}

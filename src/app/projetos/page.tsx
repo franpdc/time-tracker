@@ -72,7 +72,7 @@ export default function ProjetosPage() {
   return (
     <div className="flex min-h-full flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-border">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between px-4 lg:px-8 py-5 border-b border-border gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-[-0.02em]">Projetos</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -85,23 +85,23 @@ export default function ProjetosPage() {
               setAddingProjectToFolderId("root");
               setNewProjectName("");
             }}
-            className="flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-hover hover:border-cyan-glow/30 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-card border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-hover hover:border-cyan-glow/30 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Plus className="h-4 w-4" />
-            Novo projeto
+            <span className="whitespace-nowrap">Novo projeto</span>
           </button>
           <button
             onClick={() => setIsAddingFolder(true)}
-            className="flex items-center gap-2 rounded-xl bg-cyan-glow px-4 py-2 text-sm font-medium text-[#0D0D0D] hover:brightness-110 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-cyan-glow px-4 py-2 text-sm font-medium text-[#0D0D0D] hover:brightness-110 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             style={{ boxShadow: "0 0 16px rgba(0, 245, 255, 0.2)" }}
           >
             <Plus className="h-4 w-4" />
-            Nova pasta
+            <span className="whitespace-nowrap">Nova pasta</span>
           </button>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-6">
         {!mounted ? (
           <div className="max-w-3xl space-y-3">
             <div className="h-14 rounded-2xl skeleton" />
