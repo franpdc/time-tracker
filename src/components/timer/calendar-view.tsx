@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { format, startOfWeek, addDays, isSameDay, getHours, getMinutes } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore, TimeEntry } from "@/store/useTimerStore";
-import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EditEntryModal } from "./edit-entry-modal";
 import { AddManualEntryModal } from "./add-manual-entry-modal";
@@ -276,12 +276,6 @@ export function CalendarView({
                       }
                     }}
                   >
-                    {/* Visual hint for clicking to add */}
-                    <div className="absolute inset-0 opacity-0 group-hover/col:opacity-100 pointer-events-none transition-opacity flex items-center justify-center">
-                      <div className="bg-cyan-glow/10 border border-cyan-glow/20 rounded-full p-2">
-                        <Plus className="w-5 h-5 text-cyan-glow" strokeWidth={1.5} />
-                      </div>
-                    </div>
 
                     {/* Active Timer Block */}
                     {isActiveDay && (
