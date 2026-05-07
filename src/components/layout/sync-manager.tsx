@@ -98,50 +98,55 @@ export function SyncManager() {
       }
       
       isInitialPullDone.current = true;
-      console.log("Sync: Pull completed.");
+      console.log(`Sync: Pull completed. Loaded ${folders?.length || 0} folders, ${projects?.length || 0} projects, ${entries?.length || 0} entries.`);
     } catch (error) {
-      console.error("Sync: Error pulling data", error);
+      console.error("Sync: Error pulling data from Supabase:", error);
     }
-  }, []);
+  }, [store.folders, store.projects, store.entries]);
 
   const pushToSupabase = useCallback(async (userId: string) => {
     try {
-      console.log("Sync: Pushing data to Supabase...");
+      console.log("Sync: Pushing local changes to Supabase...");
       
-      await Promise.all([
-        supabase.from("profiles").upsert({ 
-          id: userId, 
-          daily_goal_minutes: store.dailyGoalMinutes,
-          active_timer: store.activeTimer,
-          updated_at: new Date().toISOString()
-        }),
-        
+      const { error: profileError } = await supabase.from("profiles").upsert({ 
+        id: userId, 
+        daily_goal_minutes: store.dailyGoalMinutes,
+        active_timer: store.activeTimer,
+        updated_at: new Date().toISOString()
+      });
+
+      if (profileError) throw new Error(`Profile sync failed: ${profileError.message}`);
+      
+      // Batch upserts for other tables
+      const results = await Promise.all([
         ...store.folders.map(f => supabase.from("folders").upsert({ 
           id: f.id, user_id: userId, name: f.name, is_open: f.isOpen, color: f.color, updated_at: new Date().toISOString() 
         })),
-        
         ...store.projects.map(p => supabase.from("projects").upsert({ 
           id: p.id, user_id: userId, name: p.name, color: p.color, folder_id: p.folderId, updated_at: new Date().toISOString() 
         })),
-        
         ...store.entries.map(e => supabase.from("time_entries").upsert({ 
           id: e.id, user_id: userId, task_name: e.taskName, project_id: e.projectId, started_at: e.startedAt, ended_at: e.endedAt, duration: e.duration, source: e.source, updated_at: new Date().toISOString() 
         })),
-        
         ...store.auditEntries.map(a => supabase.from("audit_entries").upsert({ 
           id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.daysPerWeek, updated_at: new Date().toISOString() 
         })),
-        
         ...store.progressItems.map(p => supabase.from("progress_items").upsert({ 
           id: p.id, user_id: userId, project_id: p.projectId, period: p.period, session_target: p.sessionTarget, duration_target_minutes: p.durationTargetMinutes, behavior_description: p.behaviorDescription, motivations: p.motivations, session_logs: p.sessionLogs, created_at: p.createdAt, updated_at: new Date().toISOString() 
         })),
       ]);
 
+      const errors = results.filter(r => r.error).map(r => r.error?.message);
+      if (errors.length > 0) {
+        throw new Error(`Sync failed for some items: ${errors.join(", ")}`);
+      }
+
       const syncDeletions = async (table: string, localIds: Set<string>) => {
         const { data: remoteItems } = await supabase.from(table).select("id").eq("user_id", userId);
         const toDelete = remoteItems?.filter(item => !localIds.has(item.id)).map(item => item.id);
         if (toDelete?.length) {
-          await supabase.from(table).delete().in("id", toDelete);
+          const { error: delError } = await supabase.from(table).delete().in("id", toDelete);
+          if (delError) console.error(`Sync: Error deleting from ${table}:`, delError);
         }
       };
 
@@ -153,9 +158,9 @@ export function SyncManager() {
         syncDeletions("progress_items", new Set(store.progressItems.map(p => p.id))),
       ]);
 
-      console.log("Sync: Push completed.");
+      console.log("Sync: Push completed successfully.");
     } catch (error) {
-      console.error("Sync: Error pushing data", error);
+      console.error("Sync: Critical error during push:", error);
     }
   }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems, store.activeTimer]);
 
