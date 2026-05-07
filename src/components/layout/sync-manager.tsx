@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/useTimerStore";
+import { toast } from "sonner";
 
 const supabase = createClient();
 
@@ -10,96 +12,79 @@ export function SyncManager() {
   const store = useAppStore();
   const isInitialPullDone = useRef(false);
   const skipNextPush = useRef(false);
+  const [syncStatus, setSyncStatus] = useState<"synced" | "syncing" | "error" | "idle">("idle");
 
   const pullFromSupabase = useCallback(async (userId: string) => {
     try {
-      console.log("Sync: Pulling data from Supabase...");
+      setSyncStatus("syncing");
+      console.log("Sync: Starting granular pull for user", userId);
       
-      const [
-        { data: profile, error: profileError },
-        { data: folders },
-        { data: projects },
-        { data: entries },
-        { data: auditEntries },
-        { data: progressItems },
-      ] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-        supabase.from("folders").select("*").eq("user_id", userId),
-        supabase.from("projects").select("*").eq("user_id", userId),
-        supabase.from("time_entries").select("*").eq("user_id", userId).order("started_at", { ascending: false }),
-        supabase.from("audit_entries").select("*").eq("user_id", userId),
-        supabase.from("progress_items").select("*").eq("user_id", userId),
-      ]);
-
-      if (profileError && profileError.code !== "PGRST116") {
-        console.error("Sync: Error fetching profile", profileError);
-      }
-
-      const isRemoteEmpty = 
-        (!folders || folders.length === 0) && 
-        (!projects || projects.length === 0) && 
-        (!entries || entries.length === 0);
-
       const currentStore = useAppStore.getState();
-      const hasLocalData = 
-        currentStore.folders.length > 0 || 
-        currentStore.projects.length > 0 || 
-        currentStore.entries.length > 0;
-
-      if (isRemoteEmpty && hasLocalData) {
-        console.log("Sync: Remote is empty but local has data. Performing initial push...");
-        await pushToSupabase(userId);
-        isInitialPullDone.current = true;
-        return;
-      }
-
       const newState: Partial<typeof currentStore> = {};
-      
+
+      // 1. Profile
+      console.log("Sync: Pulling profile...");
+      const { data: profile, error: profileError } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+      if (profileError) console.warn("Sync: Profile pull error", profileError);
       if (profile) {
         newState.dailyGoalMinutes = profile.daily_goal_minutes;
-        if (profile.active_timer) {
-          newState.activeTimer = profile.active_timer;
-        }
+        if (profile.active_timer) newState.activeTimer = profile.active_timer;
       }
 
+      // 2. Folders
+      console.log("Sync: Pulling folders...");
+      const { data: folders, error: foldersError } = await supabase.from("folders").select("*").eq("user_id", userId);
+      if (foldersError) console.error("Sync: Folders pull error", foldersError);
       if (folders) newState.folders = folders.map(f => ({ id: f.id, name: f.name, isOpen: f.is_open, color: f.color }));
+
+      // 3. Projects
+      console.log("Sync: Pulling projects...");
+      const { data: projects, error: projectsError } = await supabase.from("projects").select("*").eq("user_id", userId);
+      if (projectsError) console.error("Sync: Projects pull error", projectsError);
       if (projects) newState.projects = projects.map(p => ({ id: p.id, name: p.name, color: p.color, folderId: p.folder_id }));
+
+      // 4. Entries
+      console.log("Sync: Pulling entries...");
+      const { data: entries, error: entriesError } = await supabase.from("time_entries").select("*").eq("user_id", userId).order("started_at", { ascending: false }).limit(1000);
+      if (entriesError) console.error("Sync: Entries pull error", entriesError);
       if (entries) newState.entries = entries.map(e => ({ 
-        id: e.id, 
-        taskName: e.task_name, 
-        projectId: e.project_id, 
-        startedAt: Number(e.started_at), 
-        endedAt: Number(e.ended_at), 
-        duration: Number(e.duration), 
-        source: e.source 
-      }));
-      if (auditEntries) newState.auditEntries = auditEntries.map(a => ({ 
-        id: a.id, 
-        name: a.name, 
-        hoursPerDay: Number(a.hours_per_day), 
-        daysPerWeek: Number(a.days_per_week) 
-      }));
-      if (progressItems) newState.progressItems = progressItems.map(p => ({
-        id: p.id,
-        projectId: p.project_id,
-        period: p.period,
-        sessionTarget: p.session_target,
-        durationTargetMinutes: p.duration_target_minutes,
-        behaviorDescription: p.behavior_description,
-        createdAt: Number(p.created_at),
-        motivations: p.motivations || [],
-        sessionLogs: p.session_logs || []
+        id: e.id, taskName: e.task_name, projectId: e.project_id, startedAt: Number(e.started_at), endedAt: Number(e.ended_at), duration: Number(e.duration), source: e.source 
       }));
 
-      if (Object.keys(newState).length > 0) {
+      // 5. Audit & Progress (Non-critical)
+      try {
+        console.log("Sync: Pulling audit entries...");
+        const { data: audit } = await supabase.from("audit_entries").select("*").eq("user_id", userId);
+        if (audit) newState.auditEntries = audit.map(a => ({ id: a.id, name: a.name, hoursPerDay: Number(a.hours_per_day), daysPerWeek: Number(a.days_per_week) }));
+        
+        console.log("Sync: Pulling progress items...");
+        const { data: progress } = await supabase.from("progress_items").select("*").eq("user_id", userId);
+        if (progress) newState.progressItems = progress.map(p => ({
+          id: p.id, projectId: p.project_id, period: p.period, sessionTarget: p.session_target, durationTargetMinutes: p.duration_target_minutes, behaviorDescription: p.behavior_description, createdAt: Number(p.created_at), motivations: p.motivations || [], sessionLogs: p.session_logs || []
+        }));
+      } catch (e) {
+        console.warn("Sync: Secondary tables pull failed (likely missing tables)", e);
+      }
+
+      // Check if remote is empty but local has data
+      const isRemoteEmpty = (!folders || folders.length === 0) && (!projects || projects.length === 0);
+      const hasLocalData = currentStore.folders.length > 0 || currentStore.projects.length > 0;
+
+      if (isRemoteEmpty && hasLocalData && !isInitialPullDone.current) {
+        console.log("Sync: Remote is empty, keeping local data for initial push");
+        // We don't setState here to avoid wiping local data before first push
+      } else if (Object.keys(newState).length > 0) {
         skipNextPush.current = true;
         useAppStore.setState(newState);
       }
       
       isInitialPullDone.current = true;
-      console.log(`Sync: Pull completed. Loaded ${folders?.length || 0} folders, ${projects?.length || 0} projects, ${entries?.length || 0} entries.`);
-    } catch (error) {
-      console.error("Sync: Error pulling data from Supabase:", error);
+      setSyncStatus("synced");
+      console.log("Sync: Granular pull completed successfully.");
+    } catch (error: any) {
+      setSyncStatus("error");
+      console.error("Sync: Critical error in pullFromSupabase:", error);
+      toast.error("Erro crítico na sincronização: " + (error.message || "Verifique o console"));
     }
   }, []);
 
@@ -170,9 +155,12 @@ export function SyncManager() {
         syncDeletions("progress_items", new Set(state.progressItems.map(p => p.id))),
       ]);
 
+      setSyncStatus("synced");
       console.log("Sync: Push completed successfully.");
-    } catch (error) {
+    } catch (error: any) {
+      setSyncStatus("error");
       console.error("Sync: Critical error during push:", error);
+      toast.error("Falha na sincronização: " + (error.message || "Erro no servidor"));
     }
   }, []);
 
@@ -270,11 +258,32 @@ export function SyncManager() {
     const timeout = setTimeout(async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setSyncStatus("syncing");
       await pushToSupabase(user.id);
     }, 3000); 
 
     return () => clearTimeout(timeout);
   }, [store.folders, store.projects, store.entries, store.dailyGoalMinutes, store.auditEntries, store.progressItems, store.activeTimer, pushToSupabase]);
 
-  return null;
+  return (
+    <div className="fixed bottom-4 right-4 z-[100] pointer-events-none">
+      <div className={cn(
+        "px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-500 flex items-center gap-2",
+        syncStatus === "syncing" && "bg-cyan-glow/20 text-cyan-glow animate-pulse opacity-100",
+        syncStatus === "synced" && "bg-green-500/10 text-green-500 opacity-0 group-hover:opacity-100",
+        syncStatus === "error" && "bg-red-500/20 text-red-500 opacity-100",
+        syncStatus === "idle" && "opacity-0"
+      )}>
+        <div className={cn(
+          "h-1.5 w-1.5 rounded-full",
+          syncStatus === "syncing" && "bg-cyan-glow",
+          syncStatus === "synced" && "bg-green-500",
+          syncStatus === "error" && "bg-red-500"
+        )} />
+        {syncStatus === "syncing" && "Sincronizando..."}
+        {syncStatus === "synced" && "Sincronizado"}
+        {syncStatus === "error" && "Erro na sincronização"}
+      </div>
+    </div>
+  );
 }
