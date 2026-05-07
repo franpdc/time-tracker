@@ -208,10 +208,12 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs text-muted-foreground font-medium">O que você fez?</label>
+            <label htmlFor="edit-task-name" className="text-xs text-muted-foreground font-medium">O que você fez?</label>
             <div className="flex items-center gap-2 relative">
               <div className="relative flex-1">
                 <input
+                  id="edit-task-name"
+                  name="taskName"
                   type="text"
                   placeholder="Ex: Trabalho, Estudo..."
                   value={taskName}
@@ -297,8 +299,10 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-muted-foreground font-medium">Data</label>
+            <label htmlFor="edit-date" className="text-xs text-muted-foreground font-medium">Data</label>
             <input
+              id="edit-date"
+              name="date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -309,8 +313,10 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground font-medium">Hora de início</label>
+              <label htmlFor="edit-start-time" className="text-xs text-muted-foreground font-medium">Hora de início</label>
               <input
+                id="edit-start-time"
+                name="startTime"
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -320,8 +326,10 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
             </div>
             {!isLive && (
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground font-medium">Hora de término</label>
+                <label htmlFor="edit-end-time" className="text-xs text-muted-foreground font-medium">Hora de término</label>
                 <input
+                  id="edit-end-time"
+                  name="endTime"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}

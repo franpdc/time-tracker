@@ -187,6 +187,8 @@ export default function ProjetosPage() {
                   </div>
                 </div>
                 <input
+                  id="new-project-root-name"
+                  name="projectName"
                   autoFocus
                   type="text"
                   placeholder="Nome do projeto..."
@@ -256,6 +258,8 @@ export default function ProjetosPage() {
                   </div>
                 </div>
                 <input
+                  id="new-folder-name"
+                  name="folderName"
                   autoFocus
                   type="text"
                   placeholder="Nome da pasta..."
@@ -283,7 +287,15 @@ export default function ProjetosPage() {
                       <FolderOpen className="h-4 w-4 shrink-0" style={{ color: folder.color }} />
                       {renamingFolderId === folder.id ? (
                         <div className="flex items-center gap-2 flex-1" onClick={(e) => e.stopPropagation()}>
-                          <input autoFocus value={renamingFolderName} onChange={(e) => setRenamingFolderName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleRenameFolder(folder.id)} className="bg-accent/50 border-none text-sm font-semibold outline-none px-2 py-1 rounded-md w-full" />
+                          <input 
+                            id={`rename-folder-${folder.id}`}
+                            name="renameFolderName"
+                            autoFocus 
+                            value={renamingFolderName} 
+                            onChange={(e) => setRenamingFolderName(e.target.value)} 
+                            onKeyDown={(e) => e.key === "Enter" && handleRenameFolder(folder.id)} 
+                            className="bg-accent/50 border-none text-sm font-semibold outline-none px-2 py-1 rounded-md w-full" 
+                          />
                           <button onClick={() => handleRenameFolder(folder.id)} className="p-1 text-cyan-glow"><Check className="h-4 w-4" /></button>
                         </div>
                       ) : (
@@ -337,7 +349,16 @@ export default function ProjetosPage() {
                       ))}
                       {addingProjectToFolderId === folder.id ? (
                         <div className="flex items-center gap-3 px-6 py-3 pl-10 border-t border-border/40 bg-surface-hover/40">
-                          <input autoFocus placeholder="Nome do projeto..." value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddProject(folder.id)} className="flex-1 bg-transparent border-none text-foreground text-sm outline-none" />
+                          <input 
+                            id={`new-project-folder-${folder.id}`}
+                            name="folderProjectName"
+                            autoFocus 
+                            placeholder="Nome do projeto..." 
+                            value={newProjectName} 
+                            onChange={(e) => setNewProjectName(e.target.value)} 
+                            onKeyDown={(e) => e.key === "Enter" && handleAddProject(folder.id)} 
+                            className="flex-1 bg-transparent border-none text-foreground text-sm outline-none" 
+                          />
                           <button onClick={() => setAddingProjectToFolderId(null)} className="p-1.5 text-muted-foreground"><X className="h-4 w-4" /></button>
                           <button onClick={() => handleAddProject(folder.id)} className="p-1.5 text-cyan-glow"><Check className="h-4 w-4" /></button>
                         </div>
@@ -394,9 +415,9 @@ export default function ProjetosPage() {
                 <Input id="project-name" value={editingProject.name} onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })} className="bg-accent/30 border-border" />
               </div>
               <div className="space-y-2">
-                <Label>Pasta</Label>
+                <Label htmlFor={`edit-folder-${editingProject.id}`}>Pasta</Label>
                 <Select value={editingProject.folderId || "root"} onValueChange={(value) => setEditingProject({ ...editingProject, folderId: value === "root" ? null : value })}>
-                  <SelectTrigger className="w-full bg-accent/30 border-border h-10 px-3">
+                  <SelectTrigger id={`edit-folder-${editingProject.id}`} className="w-full bg-accent/30 border-border h-10 px-3">
                     <SelectValue>
                       {editingProject.folderId ? (
                         <div className="flex items-center gap-2">

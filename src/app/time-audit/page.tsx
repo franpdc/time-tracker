@@ -161,8 +161,10 @@ export default function TimeAuditPage() {
               </h2>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-2xs font-bold text-muted-foreground/60 uppercase tracking-[0.12em] ml-1">Nome</label>
+                  <label htmlFor="audit-name" className="text-2xs font-bold text-muted-foreground/60 uppercase tracking-[0.12em] ml-1">Nome</label>
                   <input 
+                    id="audit-name"
+                    name="auditName"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ex: Sono, Trabalho, Academia"
@@ -171,8 +173,10 @@ export default function TimeAuditPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-2xs font-bold text-muted-foreground/60 uppercase tracking-[0.12em] ml-1">Horas/Dia</label>
+                    <label htmlFor="audit-hours" className="text-2xs font-bold text-muted-foreground/60 uppercase tracking-[0.12em] ml-1">Horas/Dia</label>
                     <input 
+                      id="audit-hours"
+                      name="auditHours"
                       type="number"
                       step="0.5"
                       value={hoursPerDay}
@@ -182,8 +186,10 @@ export default function TimeAuditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-2xs font-bold text-muted-foreground/60 uppercase tracking-[0.12em] ml-1">Dias/Semana</label>
+                    <label htmlFor="audit-days" className="text-2xs font-bold text-muted-foreground/60 uppercase tracking-[0.12em] ml-1">Dias/Semana</label>
                     <input 
+                      id="audit-days"
+                      name="auditDays"
                       type="number"
                       value={daysPerWeek}
                       onChange={(e) => setDaysPerWeek(e.target.value)}

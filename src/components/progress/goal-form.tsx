@@ -101,9 +101,11 @@ export function GoalForm({ onClose, editItem }: GoalFormProps) {
           </div>
 
           <div className="space-y-2.5">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Meta de Sessões</label>
+            <label htmlFor="goal-sessions" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Meta de Sessões</label>
             <div className="flex items-center gap-3">
               <input 
+                id="goal-sessions"
+                name="goalSessions"
                 type="number"
                 value={sessionTarget}
                 onChange={e => setSessionTarget(parseInt(e.target.value) || 0)}
@@ -116,9 +118,11 @@ export function GoalForm({ onClose, editItem }: GoalFormProps) {
         
         <div className="space-y-6">
           <div className="space-y-2.5">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Duração por Sessão (Opcional)</label>
+            <label htmlFor="goal-duration" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] px-1">Duração por Sessão (Opcional)</label>
             <div className="flex items-center gap-3">
               <input 
+                id="goal-duration"
+                name="goalDuration"
                 type="number"
                 placeholder="Sem duração mínima"
                 value={durationTarget || ""}

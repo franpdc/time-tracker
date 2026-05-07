@@ -133,7 +133,7 @@ export function AddManualEntryModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <label className="text-xs text-muted-foreground font-medium">O que você fez?</label>
+            <label htmlFor="manual-task-name" className="text-xs text-muted-foreground font-medium">O que você fez?</label>
             <div className="flex items-center gap-2 relative">
               <div className="relative flex-1">
                 <input
@@ -223,8 +223,10 @@ export function AddManualEntryModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-muted-foreground font-medium">Data</label>
+            <label htmlFor="manual-date" className="text-xs text-muted-foreground font-medium">Data</label>
             <input
+              id="manual-date"
+              name="manualDate"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -235,8 +237,10 @@ export function AddManualEntryModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground font-medium">Hora de início</label>
+              <label htmlFor="manual-start-time" className="text-xs text-muted-foreground font-medium">Hora de início</label>
               <input
+                id="manual-start-time"
+                name="manualStartTime"
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -245,8 +249,10 @@ export function AddManualEntryModal({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground font-medium">Hora de término</label>
+              <label htmlFor="manual-end-time" className="text-xs text-muted-foreground font-medium">Hora de término</label>
               <input
+                id="manual-end-time"
+                name="manualEndTime"
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
