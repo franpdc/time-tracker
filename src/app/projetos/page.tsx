@@ -214,9 +214,9 @@ export default function ProjetosPage() {
                       idx < rootProjects.length - 1 && "border-b border-border/40"
                     )}
                   >
-                    <div className="flex items-center gap-3 pl-2">
-                      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: project.color, boxShadow: `0 0 8px ${project.color}40` }} />
-                      <span className="text-sm text-foreground font-medium">{project.name}</span>
+                    <div className="flex items-center gap-3 pl-2 overflow-hidden">
+                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: project.color, boxShadow: `0 0 8px ${project.color}40` }} />
+                      <span className="text-sm text-foreground font-medium truncate max-w-[200px] sm:max-w-[300px]">{project.name}</span>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-muted-foreground font-medium tabular-nums">{getProjectTime(project.id)}</span>
@@ -288,7 +288,7 @@ export default function ProjetosPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-foreground">{folder.name}</span>
+                          <span className="text-sm font-semibold text-foreground truncate max-w-[150px] sm:max-w-[250px]">{folder.name}</span>
                           <span className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wider">{folderProjects.length} {folderProjects.length === 1 ? "projeto" : "projetos"}</span>
                         </div>
                       )}
@@ -319,7 +319,7 @@ export default function ProjetosPage() {
                         <div key={project.id} className={cn("flex items-center justify-between px-6 py-3.5 hover:bg-surface-hover transition-colors duration-150 group/project", (idx < folderProjects.length - 1 || addingProjectToFolderId === folder.id) && "border-b border-border/40")}>
                           <div className="flex items-center gap-3 pl-7">
                             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: project.color, boxShadow: `0 0 8px ${project.color}40` }} />
-                            <span className="text-sm text-foreground font-medium">{project.name}</span>
+                            <span className="text-sm text-foreground font-medium truncate max-w-[200px] sm:max-w-[300px]">{project.name}</span>
                           </div>
                           <div className="flex items-center gap-4">
                             <span className="text-sm text-muted-foreground font-medium tabular-nums">{getProjectTime(project.id)}</span>

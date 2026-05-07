@@ -236,8 +236,8 @@ export default function TimeAuditPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {auditEntries.map((entry) => (
                   <div key={entry.id} className="p-5 bg-card rounded-2xl border border-border shadow-card hover:border-cyan-glow/30 transition-all group cursor-default">
-                    <div className="flex justify-between items-start mb-5">
-                      <h3 className="font-bold text-foreground group-hover:text-cyan-glow transition-colors tracking-tight">{entry.name}</h3>
+                    <div className="flex justify-between items-start mb-5 gap-3">
+                      <h3 className="font-bold text-foreground group-hover:text-cyan-glow transition-colors tracking-tight truncate flex-1" title={entry.name}>{entry.name}</h3>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
                         <button 
                           onClick={() => handleEdit(entry)}

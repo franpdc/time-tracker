@@ -165,9 +165,9 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
                     <div className="flex items-center gap-2.5 mb-2">
                       {project && <span className="w-3 h-3 rounded-full" style={{ backgroundColor: project.color }} />}
                       <h2 className={cn(
-                        "text-2xl font-bold tracking-tight",
+                        "text-2xl font-bold tracking-tight truncate max-w-[200px] sm:max-w-[300px]",
                         stats.isCompleted ? "text-muted-foreground line-through decoration-muted-foreground/40" : "text-foreground"
-                      )}>
+                      )} title={project?.name || "Projeto"}>
                         {project?.name || "Projeto"}
                       </h2>
                       {streak > 0 && (
