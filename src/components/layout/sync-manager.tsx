@@ -156,16 +156,25 @@ export function SyncManager() {
 
       // 1. Perform UPSERTS
       const pushPromises = [
-        supabase.from("profiles").upsert({ id: userId, daily_goal_minutes: state.dailyGoalMinutes, active_timer: state.activeTimer, updated_at: timestamp }),
+        supabase.from("profiles").upsert({ 
+          id: userId, 
+          daily_goal_minutes: state.dailyGoalMinutes, 
+          active_timer: state.activeTimer ? {
+            ...state.activeTimer,
+            startedAt: Math.round(state.activeTimer.startedAt),
+            pausedAt: state.activeTimer.pausedAt ? Math.round(state.activeTimer.pausedAt) : undefined
+          } : null, 
+          updated_at: timestamp 
+        }),
         supabase.from("folders").upsert(state.folders.map(f => ({ id: f.id, user_id: userId, name: f.name, is_open: f.isOpen, color: f.color, updated_at: timestamp }))),
         supabase.from("projects").upsert(state.projects.map(p => ({ id: p.id, user_id: userId, name: p.name, color: p.color, folder_id: p.folderId, updated_at: timestamp }))),
-        supabase.from("time_entries").upsert(state.entries.map(e => ({ id: e.id, user_id: userId, task_name: e.taskName, project_id: e.projectId, started_at: e.startedAt, ended_at: e.endedAt, duration: e.duration, source: e.source, updated_at: timestamp }))),
+        supabase.from("time_entries").upsert(state.entries.map(e => ({ id: e.id, user_id: userId, task_name: e.taskName, project_id: e.projectId, started_at: Math.round(e.startedAt), ended_at: Math.round(e.endedAt), duration: Math.round(e.duration), source: e.source, updated_at: timestamp }))),
         supabase.from("audit_entries").upsert(state.auditEntries.map(a => ({ id: a.id, user_id: userId, name: a.name, hours_per_day: a.hoursPerDay, days_per_week: a.daysPerWeek, updated_at: timestamp }))),
         supabase.from("progress_items").upsert(state.progressItems.map(p => ({ 
           id: p.id, user_id: userId, project_id: p.projectId, period: p.period, 
           session_target: p.sessionTarget, duration_target_minutes: p.durationTargetMinutes, 
           behavior_description: p.behaviorDescription, motivations: p.motivations, 
-          session_logs: p.sessionLogs, created_at: p.createdAt, updated_at: timestamp 
+          session_logs: p.sessionLogs, created_at: Math.round(p.createdAt), updated_at: timestamp 
         }))),
       ];
 
