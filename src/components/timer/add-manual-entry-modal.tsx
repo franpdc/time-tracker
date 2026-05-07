@@ -124,7 +124,7 @@ export function AddManualEntryModal({
         } />
       ) : null}
       <DialogContent 
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={true}
         className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated"
       >
         <DialogHeader>

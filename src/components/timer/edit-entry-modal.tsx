@@ -154,7 +154,7 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={true}
         className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated"
       >
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
