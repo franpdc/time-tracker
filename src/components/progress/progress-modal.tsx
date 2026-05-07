@@ -96,12 +96,17 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
   };
 
   const range = getPeriodRange();
-  const projectSessions = entries
+  const currentPeriodSessions = entries
     .filter(e => e.projectId === item.projectId && e.startedAt >= range.start.getTime() && e.startedAt <= range.end.getTime());
 
-  // Grouping sessions
+  // All project sessions for the history log
+  const projectSessions = entries
+    .filter(e => e.projectId === item.projectId)
+    .sort((a, b) => b.startedAt - a.startedAt); // Most recent first
+
+  // Grouping sessions by date for the log
   const groupedSessions = projectSessions.reduce((acc, session) => {
-    const title = session.taskName || "Sem título";
+    const title = format(new Date(session.startedAt), "eeee, dd 'de' MMMM", { locale: ptBR });
     if (!acc[title]) {
       acc[title] = [];
     }
@@ -278,7 +283,7 @@ export function ProgressModal({ item, isOpen, onOpenChange }: ProgressModalProps
                                       <div className="flex justify-between items-start mb-4">
                                         <div className="space-y-1">
                                            <p className="text-sm font-bold text-foreground capitalize">
-                                             {session.taskName} — {format(new Date(session.startedAt), "eeee, dd 'de' MMMM", { locale: ptBR })}
+                                             {session.taskName || "Sessão de Foco"}
                                            </p>
                                            <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
                                              <div className="flex items-center gap-1">
