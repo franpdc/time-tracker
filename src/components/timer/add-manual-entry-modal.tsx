@@ -123,7 +123,10 @@ export function AddManualEntryModal({
           </button>
         } />
       ) : null}
-      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated">
+      <DialogContent 
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-elevated"
+      >
         <DialogHeader>
           <DialogTitle>Adicionar Foco Manual</DialogTitle>
         </DialogHeader>
