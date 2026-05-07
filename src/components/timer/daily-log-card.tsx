@@ -1,13 +1,18 @@
 "use client";
 
-import { format, isSameDay } from "date-fns";
+import { addDays, format, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppStore } from "@/store/useTimerStore";
 import { useState, useEffect } from "react";
 
-export function DailyLogCard() {
+interface DailyLogCardProps {
+  date?: Date;
+  onDateChange?: (date: Date) => void;
+}
+
+export function DailyLogCard({ date, onDateChange }: DailyLogCardProps) {
   const { entries, projects, activeTimer } = useAppStore();
-  const currentDate = new Date(); // Or whatever the selected date is
+  const currentDate = date || new Date();
   const [activeElapsed, setActiveElapsed] = useState(0);
 
   // Live timer for active session
@@ -90,15 +95,24 @@ export function DailyLogCard() {
         <h2 className="text-xl font-bold text-white tracking-tight">Log Diário</h2>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-white/70 font-medium">
-            <button className="hover:text-white transition-colors">
+            <button 
+              onClick={() => onDateChange?.(addDays(currentDate, -1))}
+              className="hover:text-white transition-colors"
+            >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <span className="text-[15px]">{format(currentDate, "dd/MM")}</span>
-            <button className="hover:text-white transition-colors">
+            <button 
+              onClick={() => onDateChange?.(addDays(currentDate, 1))}
+              className="hover:text-white transition-colors"
+            >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <button className="bg-white/5 hover:bg-white/10 text-white/50 text-[13px] font-medium px-4 py-1.5 rounded-full transition-colors">
+          <button 
+            onClick={() => onDateChange?.(new Date())}
+            className="bg-white/5 hover:bg-white/10 text-white/50 text-[13px] font-medium px-4 py-1.5 rounded-full transition-colors"
+          >
             Hoje
           </button>
         </div>

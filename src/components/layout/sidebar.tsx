@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon, Clock } from "lucide-react";
+import { Home, BarChart3, FolderOpen, PanelLeftClose, PanelLeftOpen, Play, Sun, Moon, Clock, Target } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "@/store/useTimerStore";
 import { useTheme } from "@teispace/next-themes";
@@ -13,6 +13,7 @@ const navigation = [
   { name: "Overview", href: "/overview", icon: BarChart3 },
   { name: "Projetos", href: "/projetos", icon: FolderOpen },
   { name: "Time Audit", href: "/time-audit", icon: Clock },
+  { name: "Progress", href: "/progress", icon: Target },
 ];
 
 export function Sidebar() {

@@ -211,11 +211,11 @@ export function EditEntryModal({ entry, activeTimer, open, onOpenChange, isLive 
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Ex: Leitura, Estudo..."
+                placeholder="Ex: Trabalho, Estudo..."
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
                 required
-                className="flex-1 h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200"
+                className="w-full h-10 rounded-xl bg-transparent border border-border px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow/50 focus:border-cyan-glow/50 transition-all duration-200"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger>

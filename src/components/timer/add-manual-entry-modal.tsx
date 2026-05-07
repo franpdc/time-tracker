@@ -138,7 +138,7 @@ export function AddManualEntryModal({
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Ex: Leitura, Estudo..."
+                  placeholder="Ex: Trabalho, Estudo..."
                   value={taskName}
                   onChange={(e) => { setTaskName(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
