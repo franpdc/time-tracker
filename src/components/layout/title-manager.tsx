@@ -8,7 +8,7 @@ export function TitleManager() {
 
   useEffect(() => {
     if (!activeTimer) {
-      document.title = "FocusTrack";
+      document.title = "moment";
       return;
     }
 

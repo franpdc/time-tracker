@@ -811,7 +811,7 @@ export default function OverviewPage() {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `focustrack-${format(new Date(), "yyyy-MM-dd")}.csv`;
+                a.download = `moment-${format(new Date(), "yyyy-MM-dd")}.csv`;
                 a.click();
                 URL.revokeObjectURL(url);
               }}

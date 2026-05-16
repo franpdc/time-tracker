@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs -I {} sh -c 'ls -la \"{}\" | head -1')",
+      "Bash(printf '%s\\\\n' \"/Users/francisco/Documents/Programação/Projetos\"/*)",
+      "Bash(grep -r \"rounded-\" \"$\\(pwd\\)/src/app\")",
+      "Bash(grep -r \"shadow-\" \"$\\(pwd\\)/src/app\")",
+      "Bash(grep -r \"hover:\" \"$\\(pwd\\)/src/app/page.tsx\")",
+      "Bash(grep -r \"focus:\" \"$\\(pwd\\)/src/app/page.tsx\")",
+      "Bash(grep -r \"active:\" \"$\\(pwd\\)/src\")",
+      "Bash(grep -r \"transition-\" \"$\\(pwd\\)/src/app/page.tsx\")",
+      "Bash(grep -r \"gap-\" \"$\\(pwd\\)/src/app/page.tsx\")",
+      "Bash(grep -r \"px-\\\\|py-\" \"$\\(pwd\\)/src/app/page.tsx\")",
+      "Bash(grep -r \"text-\\\\[\" \"$\\(pwd\\)/src/app/page.tsx\")",
+      "Bash(grep -r \"@keyframes\\\\|animation:\" \"$\\(pwd\\)/src/app/globals.css\")",
+      "Bash(grep -r \"skeleton\\\\|loading\\\\|Skeleton\" \"$\\(pwd\\)/src\")",
+      "Bash(grep -r \"empty state\\\\|Empty state\\\\|Nenhuma\" \"$\\(pwd\\)/src/app\")",
+      "Bash(grep -r \"focus-visible\\\\|focus:ring\" \"$\\(pwd\\)/src\")",
+      "Bash(npx next *)"
+    ]
+  }
+}

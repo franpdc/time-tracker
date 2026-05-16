@@ -60,11 +60,11 @@ export function MobileSidebar() {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-border z-40 px-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-glow shadow-[0_0_12px_rgba(0,245,255,0.25)]">
-            <Zap className="h-4 w-4 text-[#0D0D0D]" fill="currentColor" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg overflow-hidden">
+            <img src="/logo.png" alt="moment logo" className="h-8 w-8 object-contain" />
           </div>
           <span className="text-lg font-bold tracking-[-0.02em] text-foreground">
-            FocusTrack
+            moment
           </span>
         </div>
         
@@ -94,10 +94,10 @@ export function MobileSidebar() {
       >
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-glow shadow-[0_0_12px_rgba(0,245,255,0.25)]">
-              <Zap className="h-4 w-4 text-[#0D0D0D]" fill="currentColor" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg overflow-hidden">
+              <img src="/logo.png" alt="moment logo" className="h-8 w-8 object-contain" />
             </div>
-            <span className="text-lg font-bold tracking-[-0.02em]">FocusTrack</span>
+            <span className="text-lg font-bold tracking-[-0.02em]">moment</span>
           </div>
           <button 
             onClick={() => setIsOpen(false)}

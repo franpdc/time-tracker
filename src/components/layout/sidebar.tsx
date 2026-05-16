@@ -69,12 +69,12 @@ export function Sidebar() {
 
       {/* Logo */}
       <div className={cn("mb-10 flex items-center gap-2.5", isCollapsed ? "justify-center" : "px-2")}>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-glow shadow-[0_0_16px_rgba(0,245,255,0.3)]">
-          <Zap className="h-5 w-5 text-[#0D0D0D]" fill="currentColor" />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg overflow-hidden">
+          <img src="/logo.png" alt="moment logo" className="h-8 w-8 object-contain" />
         </div>
         {!isCollapsed && (
           <span className="text-lg font-bold tracking-[-0.02em] text-foreground line-clamp-1">
-            FocusTrack
+            moment
           </span>
         )}
       </div>

@@ -12,10 +12,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FocusTrack",
+  title: "moment",
   description: "Rastreie seu tempo de foco e produtividade",
   icons: {
-    icon: "/icon.svg",
+    icon: "/icon.png",
   },
 };
 
